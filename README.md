@@ -27,7 +27,7 @@ Toujours vérifier le HEAD réel de la branche `pc_port` sur GitHub avant de com
 ## État de l'automatisation
 
 - Les anciens workflows Linux, Windows et ARM ont été copiés à l'identique dans `docs/operations/workflow-archive/2026-10-22/`, puis retirés de `.github/workflows/` pour commencer la refonte P-1. Ils ne doivent pas être réactivés sans revue.
-- **Le seul workflow actif est `preparation-checks.yml`** : il vérifie la syntaxe Python de l'inventaire et le déterminisme de son rapport, sans compiler le jeu ni publier d'artefact. Les anciens workflows de compilation C/Linux, Windows et ARM restent archivés ; les nouveaux contrôles seront ajoutés par étapes pendant P-1.
+- Les anciens workflows Linux, Windows et ARM sont archivés et ne sont pas actifs. Deux workflows de remplacement sont prévus pour cette phase : `preparation-checks.yml` vérifie la syntaxe et le déterminisme de l'inventaire ; `baseline-c-linux.yml` construit la référence C/Linux sans publier les exécutables, et conserve uniquement un manifeste SHA-256 de sorties.
 - Le runbook initial de baseline C/Linux se trouve dans `docs/operations/c-baseline.md`. L'exécution locale froide et les preuves d'artefacts restent à enregistrer.
 - `tools/scripts/repo_inventory.py` commence l'inventaire déterministe de l'arbre Git versionné ; son exécution et la revue du rapport restent à faire.
 - Les lots liés doivent toujours être publiés en une seule mise à jour de référence ; voir la politique commits/CI.

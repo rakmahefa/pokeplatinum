@@ -95,7 +95,7 @@ Règles :
 
 Les fichiers historiques `build_linux.yml`, `build_win.yml` et `build_arm.yml` sont archivés dans `docs/operations/workflow-archive/2026-10-22/`. Les copies sont hors de `.github/workflows/` ; les originaux actifs ont été supprimés en un lot.
 
-**Seul `.github/workflows/preparation-checks.yml` est actuellement actif.** Il ne lance pas de compilation C/Rust. Les runs lancés avant le retrait des anciens workflows peuvent continuer indépendamment de l'état du HEAD ; cela ne signifie pas qu'un workflow supprimé reste actif.
+Deux workflows de préparation sont désormais séparés : `.github/workflows/preparation-checks.yml` contrôle l'inventaire et `.github/workflows/baseline-c-linux.yml` lance un build C/Linux ciblé, avec manifeste de checksums mais sans publier les exécutables. Les runs lancés avant le retrait des anciens workflows peuvent continuer indépendamment de l'état du HEAD ; cela ne signifie pas qu'un workflow supprimé reste actif.
 
 Les nouveaux workflows P-1 devront définir :
 - événements `push`, `pull_request`, branches et chemins concernés ;

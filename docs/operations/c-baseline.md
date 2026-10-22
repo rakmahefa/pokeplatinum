@@ -11,7 +11,7 @@
 - Build ARM historique : [run 39722714020](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714020), conclusion `success`.
 - Build Windows historique : [run 39722714273](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714273), encore indiqué `in_progress` lors du dernier relevé ; résultat final non confirmé.
 
-Ces statuts attestent uniquement de l'exécution des jobs historiques. Les preuves disponibles ne comprennent pas un run local propre, un checksum d'artefact de référence ni des captures du runtime. La baseline reste **candidate**, pas validée.
+Ces statuts attestent uniquement de l'exécution des jobs historiques. Le workflow nouveau [baseline-c-linux.yml](../../.github/workflows/baseline-c-linux.yml) est conçu pour effectuer un build ciblé sur les changements C/build ou sur déclenchement manuel, puis conserver un manifeste des tailles et SHA-256 sans téléverser les exécutables. Tant que son premier run n'a pas fini et que ses sorties ne sont pas examinées, la baseline reste **candidate**, pas validée.
 
 ## 2. Prérequis
 

@@ -27,14 +27,21 @@ L'utilisateur a confirmé qu'il s'agit de son fork et a demandé de supprimer le
 
 ## 3. État Git connu
 
-HEAD inspecté avant le lot de préparation : `7cbf682c0a8ec8a6729baeb00fb98e596a0c739d`. Toujours relire le HEAD réel de `pc_port` avant d'agir ; cette SHA est un repère historique.
+HEAD confirmé avant ce lot : `b58233c4d47f56b75d863200e557bf989948d3e6`. Après chaque publication, relire le HEAD réel sur GitHub ; une SHA inscrite ici ne remplace pas cette vérification.
 
-Runs de la CI historique observés avant son retrait :
-- Linux : [run 39722714025](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714025), conclusion `success` ;
-- ARM : [run 39722714020](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714020), conclusion `success` ;
-- Windows : [run 39722714273](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714273), encore `in_progress` lors de la dernière lecture de l'API ; résultat final non confirmé.
+Commits du lot précédent :
+- `4e42a86afe9dcd4aff2c0cdba4a0f596a427a955` — archive exacte des workflows historiques ;
+- `a0ab305b6fc52a0e5e2b95fd64abd31a4b388a0e` — retrait des trois fichiers actifs ;
+- `e71df0f741f7bc18f0567f102ed46de86c020cd7` — runbook initial et inventaire Git ;
+- `b58233c4d47f56b75d863200e557bf989948d3e6` — premier workflow de préparation.
 
-Les trois workflows sont sauvegardés dans `docs/operations/workflow-archive/2026-10-22/`, puis retirés du répertoire actif. Le premier workflow de préparation, [`.github/workflows/preparation-checks.yml`](.github/workflows/preparation-checks.yml), est le seul fichier actif : il vérifie la syntaxe et le déterminisme de l'inventaire, sans compiler le jeu. Consulter le HEAD sur GitHub plutôt que de présumer sa SHA dans une session future.
+État de la CI observé :
+- Le workflow [`preparation-checks`](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724440638) a terminé avec `success` sur `b58233c`.
+- Il a validé la syntaxe de `tools/scripts/repo_inventory.py`, généré deux JSON puis comparé leur contenu : les rapports sont identiques.
+- Résumé généré pour cet HEAD : 27 711 blobs Git, 138 519 605 octets de contenu de blob, aucun gitlink ni lien symbolique dans le rapport.
+- Les runs historiques Linux (`39722714025`) et ARM (`39722714020`) ont terminé avec `success` sur `ef958c9`. Le run Windows `39722714273` était encore indiqué `in_progress` lors du dernier relevé ; il n'est pas considéré comme confirmé.
+
+Les workflows historiques sont sauvegardés dans `docs/operations/workflow-archive/2026-10-22/`. Les nouveaux workflows de préparation sont conçus séparément.
 
 ## 4. Documents à lire en premier
 
@@ -83,7 +90,7 @@ La chaîne Meson/Linux/Windows/ARM doit continuer à fonctionner pendant P-1. Ne
 3. **P-1.3 — Parité fonctionnelle** : feature matrix, parcours vertical et fixtures.
 4. **P-1.4 — ADR et spike Bevy** : frontières Bevy/domaine, deux surfaces logiques, coordonnées, tick/RNG, voie de rendu et choix final de version.
 5. **P-1.5 — Toolchain/qualité** : workspace indépendant, version Rust stable fixée, `Cargo.lock`, fmt/clippy/tests.
-6. **P-1.6 — CI de remplacement** : un premier workflow de vérification docs/inventaire est actif ; la CI C de référence et la CI Rust (formatage, tests, build minimal) restent à concevoir et valider.
+6. **P-1.6 — CI de remplacement** : le workflow docs/inventaire est vert ; le workflow dédié au build C/Linux est ajouté dans ce lot ; la CI Rust (formatage, tests, build minimal) reste à concevoir.
 7. **P-1.7 — `xtask`** : `doctor`, `inventory`, contrôles de génération, vérification de manifests ; sorties déterministes et mode dry-run.
 8. **P-1.8 — Documentation/sécurité** : guides de développement, provenance des assets, licences, workflows et cache.
 9. **P-1.9 — Profilage** : protocole reproductible et baseline initiale, sans seuil arbitraire au début.
@@ -93,13 +100,14 @@ L'ordre détaillé et les critères restent dans `docs/architecture/PREPARATION.
 
 ## 7.1. Politique de commits et de ref
 
-La procédure documentée dans [`docs/operations/commit-and-ci-policy.md`](docs/operations/commit-and-ci-policy.md) reste en vigueur : faire les commits logiques en chaîne, créer les blobs/arbres/commits, puis déplacer `pc_port` une seule fois avec un contrôle `expected_sha` et sans force-push. Les vieux groupes de concurrence sont conservés uniquement dans l'archive ; seul `preparation-checks.yml` est actif et son périmètre est limité aux docs et à l'inventaire.
+La procédure documentée dans [`docs/operations/commit-and-ci-policy.md`](docs/operations/commit-and-ci-policy.md) reste en vigueur : faire les commits logiques en chaîne, créer les blobs/arbres/commits, puis déplacer `pc_port` une seule fois avec un contrôle `expected_sha` et sans force-push. Les vieux groupes de concurrence sont conservés uniquement dans l'archive ; `preparation-checks.yml` et `baseline-c-linux.yml` sont les workflows de remplacement, avec des périmètres distincts.
 
 ## 7. Automatisation et documentation envisagées
 
 ### Workflows actifs et prévus pendant P-1
 
 - `.github/workflows/preparation-checks.yml` : actif ; syntaxe Python et déterminisme de l'inventaire, sans compilation du jeu ;
+- `.github/workflows/baseline-c-linux.yml` : build C/Linux de référence ; manifeste SHA-256 uniquement, sans publication d'exécutables ;
 - `.github/workflows/rust-pr.yml` : fmt, lint, tests rapides, validation des fixtures, build Linux minimal ;
 - `.github/workflows/rust-integration.yml` : tests headless et d'intégration, génération et assets avec fixtures approuvées ;
 - `.github/workflows/rust-nightly.yml` : maintenance planifiée, licences/advisories, docs et tendance des benchmarks ;
@@ -119,11 +127,11 @@ Documents de préparation proposés dans `docs/architecture/`, `docs/migration/`
 
 Les copies des workflows historiques sont sous `docs/operations/workflow-archive/2026-10-22/`, avec un manifeste et les SHA des blobs originaux. Les trois fichiers ont été retirés de `.github/workflows/`.
 
-**Seul `.github/workflows/preparation-checks.yml` est actif.** Il contrôle la syntaxe et le déterminisme de l'inventaire, sans compilation C/Rust. P-1 doit encore établir la stratégie du build C de référence, la CI Rust rapide, les tests d'intégration et le profilage. Les runs lancés avant la suppression des anciens fichiers peuvent encore terminer ; ils ne signifient pas que ces anciens workflows sont toujours actifs.
+Les workflows actifs ont été recréés séparément : `.github/workflows/preparation-checks.yml` contrôle les docs/l'inventaire ; `.github/workflows/baseline-c-linux.yml` construit la référence C/Linux et ne conserve qu'un manifeste de checksums, pas les exécutables. La CI Rust rapide, les tests d'intégration et le profilage restent à établir. Les runs lancés avant la suppression des anciens fichiers peuvent encore terminer ; ils ne signifient pas que ces anciens workflows sont toujours actifs.
 
 ## 9. Prochaines actions recommandées
 
-1. Exécuter le protocole froid de `docs/operations/c-baseline.md` sur une machine Linux disponible ; noter les sorties, versions, SHA-256 et toute dépendance locale sans ajouter de binaire ou d'asset privé à Git.
+1. Examiner le résultat du nouveau workflow `baseline-c-linux.yml` et son manifeste SHA-256 ; comparer avec le protocole froid de `docs/operations/c-baseline.md` et noter les dépendances locales restantes sans ajouter de binaire ou d'asset privé à Git.
 2. Exécuter `python3 tools/scripts/repo_inventory.py --revision HEAD --output /tmp/pokeplatinum-inventory.json`, contrôler le JSON, puis archiver uniquement un rapport expurgé/non sensible si utile.
 3. Compléter P-1.2 : cibles Meson/Make, dépendances/subprojects, générateurs, formats de ressources et provenance/licences.
 4. Concevoir les nouveaux workflows avant de les activer : validation docs, contrôles CI Rust légers, jobs d'intégration séparés ; permissions minimales, paths pertinents, caches non essentiels et annulation obsolète.

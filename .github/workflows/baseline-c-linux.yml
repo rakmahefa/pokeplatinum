@@ -1,0 +1,122 @@
+name: baseline-c-linux
+
+on:
+  push:
+    branches: [ pc_port ]
+    paths:
+      - '.github/workflows/baseline-c-linux.yml'
+      - 'src/**'
+      - 'include/**'
+      - 'asm/**'
+      - 'res/**'
+      - 'generated/**'
+      - 'subprojects/**'
+      - 'tools/docker/**'
+      - 'tools/scripts/make_*.py'
+      - 'tools/scripts/make_*.sh'
+      - 'tools/scripts/copy_pc_files.sh'
+      - 'tools/scripts/meson.build'
+      - 'Makefile'
+      - 'meson.build'
+      - 'meson.options'
+      - 'meson/**'
+      - 'drun.sh'
+      - 'meson.sh'
+      - 'replace.sh'
+  pull_request:
+    paths:
+      - '.github/workflows/baseline-c-linux.yml'
+      - 'src/**'
+      - 'include/**'
+      - 'asm/**'
+      - 'res/**'
+      - 'generated/**'
+      - 'subprojects/**'
+      - 'tools/docker/**'
+      - 'tools/scripts/make_*.py'
+      - 'tools/scripts/make_*.sh'
+      - 'tools/scripts/copy_pc_files.sh'
+      - 'tools/scripts/meson.build'
+      - 'Makefile'
+      - 'meson.build'
+      - 'meson.options'
+      - 'meson/**'
+      - 'drun.sh'
+      - 'meson.sh'
+      - 'replace.sh'
+  workflow_dispatch:
+
+concurrency:
+  group: baseline-c-linux-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build C/Linux reference
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Install host packages
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y --no-install-recommends fuse git python3 wget zip
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Record source and Docker environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            printf 'source_sha=%s\n' "$(git rev-parse HEAD)"
+            printf 'platform=%s\n' "$(uname -srm)"
+            docker version
+          } | tee "$RUNNER_TEMP/baseline-environment.txt"
+
+      - name: Build Metroskrew
+        run: ./drun.sh make skrew
+
+      - name: Build Linux target
+        run: ./drun.sh make linux
+
+      - name: Hash expected build outputs without packaging binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          build_dir=build_linux/pokeplatinum
+          test -d "$build_dir"
+          manifest="$RUNNER_TEMP/c-baseline-linux-manifest.txt"
+          {
+            printf 'source_sha=%s\n' "$(git rev-parse HEAD)"
+            printf 'platform=%s\n' "$(uname -srm)"
+            for name in firmware.bin header.bin main pokeplatinum.AppImage; do
+              path="$build_dir/$name"
+              if [ ! -s "$path" ]; then
+                echo "Expected non-empty build output is missing: $path" >&2
+                exit 1
+              fi
+              digest="$(sha256sum "$path" | cut -d' ' -f1)"
+              size="$(stat -c '%s' "$path")"
+              printf '%s %s %s\n' "$digest" "$size" "$path"
+            done
+          } > "$manifest"
+          manifest_sha="$(sha256sum "$manifest" | cut -d' ' -f1)"
+          {
+            printf '## C/Linux reference build\n\n'
+            printf '* Source commit: `%s`\n' "$(git rev-parse HEAD)"
+            printf '* Manifest SHA-256: `%s`\n\n' "$manifest_sha"
+            printf 'The artifact below contains hashes and sizes only; no executables are uploaded.\n\n'
+            printf '```text\n'
+            cat "$manifest"
+            printf '```\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload checksum manifest only
+        uses: actions/upload-artifact@v6
+        with:
+          name: c-baseline-linux-${{ github.sha }}
+          path: ${{ runner.temp }}/c-baseline-linux-manifest.txt
+          retention-days: 14
