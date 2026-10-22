@@ -56,13 +56,13 @@ Ne pas lancer `git push` après chaque commit dans une série de commits liés. 
 Sur la branche observée par les workflows, suivre cette séquence :
 
 1. Lire le HEAD et l'arbre actuels ; ne jamais présumer qu'une ancienne SHA est encore la tête.
-2. Préparer un blob pour chaque fichier modifié.
-3. Créer un arbre contenant toutes les modifications (en partant de l'arbre de base).
-4. Créer un commit cohérent, ou une chaîne de commits dont chaque parent est le commit précédent.
-5. **Appeler la mise à jour de la référence de branche une seule fois**, vers le dernier commit de la chaîne.
+2. Préparer un blob pour chaque fichier modifié avec l'API Git Data **`create_blob`**.
+3. Créer un arbre avec **`create_tree`**, en indiquant `base_tree_sha` et les chemins/blob SHAs du lot.
+4. Créer un commit via **`create_commit`**. Si plusieurs commits logiques sont utiles, répéter les étapes arbre/commit en utilisant l'arbre précédent comme base et le commit précédent comme parent.
+5. **Appeler `update_ref` une seule fois**, en fournissant le HEAD initial comme `expected_sha`, `force: false` et la SHA du dernier commit.
 6. Vérifier le nouveau HEAD, les chemins et l'état des workflows.
 
-Le dépôt voit ainsi une seule mise à jour de référence pour le lot et devrait déclencher un seul événement push par workflow concerné. Cette procédure conserve les commits intermédiaires dans l'historique si une chaîne a été créée.
+Le dépôt voit ainsi une seule mise à jour de référence pour le lot et devrait déclencher un seul événement push par workflow concerné. Cette procédure conserve les commits intermédiaires dans l'historique si une chaîne a été créée. En cas d'échec de l'expected SHA, relire la tête de branche et intégrer les changements récents au lieu de forcer la mise à jour.
 
 **À éviter pour un lot multi-fichiers :** appeler `create_file` ou `update_file` successivement sur `pc_port`. Ces API modifient la référence à chaque opération et peuvent déclencher la CI à chaque fois.
 
