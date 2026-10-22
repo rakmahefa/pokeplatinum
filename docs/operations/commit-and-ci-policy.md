@@ -97,6 +97,8 @@ Les fichiers historiques `build_linux.yml`, `build_win.yml` et `build_arm.yml` s
 
 Deux workflows de préparation sont désormais séparés : `.github/workflows/preparation-checks.yml` contrôle l'inventaire et `.github/workflows/baseline-c-linux.yml` lance un build C/Linux ciblé, avec manifeste de checksums mais sans publier les exécutables. Les runs lancés avant le retrait des anciens workflows peuvent continuer indépendamment de l'état du HEAD ; cela ne signifie pas qu'un workflow supprimé reste actif.
 
+Le workflow `preparation-checks.yml` compare deux rapports d'inventaire et conserve le JSON comme artefact de métadonnées pendant 14 jours. Il ne téléverse aucun contenu de fichier. Le workflow C/Linux conserve uniquement un manifeste de tailles et SHA-256, sans les exécutables.
+
 Les nouveaux workflows P-1 devront définir :
 - événements `push`, `pull_request`, branches et chemins concernés ;
 - permissions minimales au niveau du workflow ou du job ;

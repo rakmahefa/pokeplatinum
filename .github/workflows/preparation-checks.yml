@@ -55,3 +55,10 @@ jobs:
           assert len(report["largest_files"]) <= 10
           print("Inventory schema and deterministic output verified:", report["summary"])
           PY
+
+      - name: Upload metadata-only inventory report
+        uses: actions/upload-artifact@v6
+        with:
+          name: repository-inventory-${{ github.sha }}
+          path: ${{ runner.temp }}/inventory-1.json
+          retention-days: 14
