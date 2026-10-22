@@ -231,7 +231,7 @@ $(BUILD_NX):
 	mkdir -p -- $(BUILD_NX) 
 
 meson: $(MESON)
-	@test "$($(GIT) -C $(MESON_DIR) rev-parse HEAD)" = "$(MESON_COMMIT)" || { printf 'Meson $(MESON_VER) did not resolve to pinned commit $(MESON_COMMIT)\n' >&2; exit 1; }
+	@test "$$($(GIT) -C $(MESON_DIR) rev-parse HEAD)" = "$(MESON_COMMIT)" || { printf 'Meson $(MESON_VER) did not resolve to pinned commit $(MESON_COMMIT)\n' >&2; exit 1; }
 
 $(MESON):
 	$(GIT) clone --depth=1 -b $(MESON_VER) https://github.com/mesonbuild/meson $(@D)

@@ -6,14 +6,15 @@
 > **Branche de travail :** `pc_port`  
 > **Règle HEAD :** toujours lire le HEAD actuel sur GitHub avant de reprendre ; une SHA inscrite dans ce document n'est qu'un point de référence historique.
 
-## Dernier lot — 2026-10-22 : workflows ciblés et correctif de la garde Meson
+## Dernier lot — 2026-10-22 : correctif effectif de la garde SHA Meson
 
-- HEAD avant ce lot : 3d9b0b8275cf1b1b34b353b45cd69b8a23c5d916.
-- docs-inventory.yml a réussi sur cette révision dans le run 39735904476 ; le contrôle de syntaxe Python et les deux inventaires ont réussi.
-- Le build C/Linux 39735904644 a été déclenché sur cette révision. L'inspection du run précédent 39727347222 a montré que la recette Makefile utilisait $(...) comme référence de variable Make, au lieu d'échapper le dollar pour demander une substitution de commande au shell. Cela provoquait un faux échec lors de la vérification de la SHA Meson.
-- Le lot courant corrige la recette pour que le shell exécute git -C subprojects/meson-1.12.0 rev-parse HEAD, puis met à jour cette passation et la checklist. Le build C/Linux doit être revalidé sur la nouvelle SHA.
-- Les workflows actifs restent docs-inventory.yml et baseline-c-linux.yml. La baseline ne publie que des métadonnées/checksums, jamais les exécutables.
-- Le workspace Rust engine/ n'existe pas encore ; ne pas ajouter de workflow qui prétend compiler le runtime Rust avant ses manifests.
+- HEAD avant ce lot : c9734838e1fd29b506a43f5a79fab1c48a381f34.
+- Le run docs-inventory 39735904476 a réussi sur 3d9b0b8 : syntaxe Python et deux rapports d'inventaire identiques.
+- Le build C/Linux 39735904644 a échoué sur 3d9b0b8. Le log montre que la recette Make utilisait un seul dollar dans une expression destinée au shell ; Make l'interprétait comme une variable et la comparaison de commit Meson échouait.
+- La vérification du HEAD c973483 a confirmé que la ligne du Makefile était encore inchangée. Ce lot modifie effectivement la recette en échappant le dollar (double dollar dans Make) afin que le shell exécute git rev-parse HEAD et compare le SHA au commit attendu.
+- Le changement du Makefile déclenche à nouveau baseline-c-linux.yml ; les mises à jour de documentation déclenchent docs-inventory.yml. Le succès du nouveau build reste à confirmer.
+- Les workflows actifs restent docs-inventory.yml et baseline-c-linux.yml. Le manifeste du build ne téléverse que des métadonnées/checksums, jamais les exécutables.
+- La CI Rust attend le workspace engine/ et ses manifests Cargo.
 
 ## 1. Contexte et objectif
 
@@ -51,7 +52,7 @@ Résultats CI confirmés :
 - Les SHAs de libntr, libntrdwc, libntrsystem, libntrwifi, libvct et metang observées dans le manifeste sont épinglées dans les wrappers et `update.ini`. Le Makefile vérifie le commit exact de Meson 1.12.0 ; le build suivant doit valider ces épingles.
 - Les anciens workflows C Linux/ARM/Windows ont terminé avec `success` sur le commit historique `ef958c9`. Les originaux sont archivés à l'identique dans `docs/operations/workflow-archive/2026-10-22/`.
 
-Les anciens workflows de préparation restent archivés sous `docs/operations/workflow-archive/current-active-2026-10-22/`. Les remplaçants actifs sont `.github/workflows/docs-inventory.yml` et `.github/workflows/baseline-c-linux.yml`. Le run docs/inventaire 39735904476 a réussi sur 3d9b0b8 ; le build C/Linux initial de cette révision a révélé le problème de syntaxe Make corrigé dans le lot suivant.
+Les anciens workflows de préparation restent archivés sous `docs/operations/workflow-archive/current-active-2026-10-22/`. Les remplaçants actifs sont `.github/workflows/docs-inventory.yml` et `.github/workflows/baseline-c-linux.yml`. Le run docs/inventaire 39735904476 a réussi sur 3d9b0b8 ; le build C/Linux initial a révélé la garde Make défectueuse, corrigée dans le commit courant et en attente de validation CI.
 
 ## 4. Documents à lire en premier
 

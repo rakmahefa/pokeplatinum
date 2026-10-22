@@ -1,6 +1,6 @@
 # Baseline C/Linux — procédure et première preuve
 
-> **État au 2026-10-22 :** un ancien workflow C/Linux a réussi sur Ubuntu 24.04 à la révision indiquée ci-dessous. Une nouvelle définition baseline-c-linux.yml vient d'être ajoutée avec des filtres ciblés ; son premier run a mis en évidence un défaut de quoting dans la garde SHA de Meson au Makefile ; le correctif vient d'être publié et doit être confirmé par le build déclenché sur le nouveau commit. L'exécution locale froide et le lancement visuel du runtime restent à effectuer ; la baseline fonctionnelle n'est pas encore établie.
+> **État au 2026-10-22 :** un ancien workflow C/Linux a réussi sur Ubuntu 24.04 à la révision indiquée ci-dessous. Une nouvelle définition baseline-c-linux.yml vient d'être ajoutée avec des filtres ciblés ; son premier run a mis en évidence un défaut de quoting dans la garde SHA de Meson au Makefile ; le correctif effectif du Makefile est publié dans ce commit et doit être confirmé par le build déclenché sur cette nouvelle révision. L'exécution locale froide et le lancement visuel du runtime restent à effectuer ; la baseline fonctionnelle n'est pas encore établie.
 
 ## 1. Révision effectivement compilée
 

@@ -1,6 +1,6 @@
 # Architecture de CI et de cache — préparation P-1
 
-> **État au 2026-10-22 :** les workflows docs-inventory.yml et baseline-c-linux.yml viennent d'être ajoutés. docs-inventory.yml a réussi sur le commit 3d9b0b8. Le build C/Linux a révélé une erreur de quoting dans la vérification de la SHA Meson du Makefile ; un correctif est soumis dans le lot suivant et doit être vérifié par un nouveau run. Les autres pipelines ci-dessous restent des cibles de conception.
+> **État au 2026-10-22 :** les workflows docs-inventory.yml et baseline-c-linux.yml viennent d'être ajoutés. docs-inventory.yml a réussi sur le commit 3d9b0b8. Le build C/Linux a révélé une erreur de quoting dans la vérification de la SHA Meson du Makefile ; le présent commit applique le correctif et un nouveau run doit en vérifier le résultat. Les autres pipelines ci-dessous restent des cibles de conception.
 
 ## 1. Objectifs
 
@@ -86,4 +86,4 @@ Un workflow n'est réputé opérationnel qu'après :
 
 ## 8. Décision de transition
 
-Les deux premiers workflows de remplacement (docs-inventory.yml et baseline-c-linux.yml) ont été ajoutés en un seul lot avec leurs mises à jour documentaires. docs-inventory.yml est vert sur son premier commit. Le succès de baseline-c-linux doit être confirmé après la correction du test de SHA Meson dans le Makefile. La branche de sauvegarde et les archives fournissent un retour arrière ; la prochaine étape est d'ajouter la CI Rust après création du workspace.
+Les deux premiers workflows de remplacement (docs-inventory.yml et baseline-c-linux.yml) ont été ajoutés en un seul lot avec leurs mises à jour documentaires. docs-inventory.yml est vert sur son premier commit. Le succès de baseline-c-linux doit être confirmé sur la révision où le test de SHA Meson du Makefile a effectivement été corrigé. La branche de sauvegarde et les archives fournissent un retour arrière ; la prochaine étape est d'ajouter la CI Rust après création du workspace.
