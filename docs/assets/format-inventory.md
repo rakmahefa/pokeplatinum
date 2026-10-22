@@ -27,6 +27,10 @@ L'outil `tools/scripts/repo_inventory.py` a lu l'arbre Git commité, compté les
 | `asm/` | 9 | 287 067 |
 | Racine | 19 | 87 763 |
 | `subprojects/` | 24 | 71 623 |
+| `.github/` | 6 | 9 930 |
+| `.vscode/` | 1 | 1 911 |
+| `images/` | 1 | 14 161 |
+| `meson/` | 7 | 2 013 |
 
 Les ressources sont la plus grande part de l'arbre suivi. Elles ne doivent pas toutes être converties automatiquement : les ressources brutes, fichiers générés, ressources préconstruites, outils et formats propriétaires doivent être identifiés par usage.
 
