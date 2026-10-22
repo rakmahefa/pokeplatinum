@@ -11,7 +11,7 @@ Pour une série de changements liés, l'objectif est de publier **une seule mise
 - **Développement local :** faire autant de commits cohérents que nécessaire sur une branche de travail, puis pousser la série en une seule fois.
 - **Modifications par API GitHub / agent :** préparer tous les blobs et arbres, créer un ou plusieurs commits liés, puis déplacer la référence de branche une seule fois. Ne pas utiliser `create_file` ou `update_file` successivement sur la branche surveillée pour chaque fichier d'un même lot.
 - **Sécurité CI :** les trois workflows historiques ont été sauvegardés sous `docs/operations/workflow-archive/2026-10-22/` et supprimés de `.github/workflows/` pour commencer la refonte P-1.
-- **État temporaire :** seul `.github/workflows/preparation-checks.yml` est actif. Il teste la syntaxe et le déterminisme de l'inventaire, pas le build du jeu. Les workflows de compilation C/Rust restent à concevoir pendant P-1.
+- **Workflows de préparation :** `.github/workflows/preparation-checks.yml` contrôle la syntaxe et le déterminisme de l'inventaire ; `.github/workflows/baseline-c-linux.yml` réalise un build C/Linux ciblé et conserve uniquement un manifeste de métadonnées/checksums.
 - **Documents :** les nouveaux contrôles devront vérifier les Markdown et les liens sans lancer inutilement les compilations du jeu.
 - **Publication :** ne pas mélanger les tâches de publication avec les tâches de test et de compilation.
 
@@ -95,9 +95,9 @@ Règles :
 
 Les fichiers historiques `build_linux.yml`, `build_win.yml` et `build_arm.yml` sont archivés dans `docs/operations/workflow-archive/2026-10-22/`. Les copies sont hors de `.github/workflows/` ; les originaux actifs ont été supprimés en un lot.
 
-Deux workflows de préparation sont désormais séparés : `.github/workflows/preparation-checks.yml` contrôle l'inventaire et `.github/workflows/baseline-c-linux.yml` lance un build C/Linux ciblé, avec manifeste de checksums mais sans publier les exécutables. Les runs lancés avant le retrait des anciens workflows peuvent continuer indépendamment de l'état du HEAD ; cela ne signifie pas qu'un workflow supprimé reste actif.
+Deux workflows de préparation sont actifs : `.github/workflows/preparation-checks.yml` contrôle la syntaxe/déterminisme de l'inventaire et conserve un JSON de métadonnées ; `.github/workflows/baseline-c-linux.yml` lance un build C/Linux. Le build du commit `7a07925` a réussi et son artefact ne contient que des métadonnées et SHA-256, pas les exécutables. Le manifeste enrichi du prochain run enregistrera les références des dépendances résolues et les hashes des définitions `.wrap`. Les runs lancés avant le retrait des anciens workflows peuvent continuer indépendamment de l'état du HEAD ; cela ne signifie pas qu'un workflow supprimé reste actif.
 
-Le workflow `preparation-checks.yml` compare deux rapports d'inventaire et conserve le JSON comme artefact de métadonnées pendant 14 jours. Il ne téléverse aucun contenu de fichier. Le premier snapshot de volumes/extensions est résumé dans `docs/assets/format-inventory.md` ; il distingue explicitement les observations des formats encore à confirmer. Le workflow C/Linux conserve uniquement un manifeste de tailles et SHA-256, sans les exécutables.
+Le workflow `preparation-checks.yml` compare deux rapports d'inventaire et conserve le JSON de métadonnées pendant 14 jours, sans téléverser le contenu des blobs. Le premier snapshot de volumes/extensions est résumé dans `docs/assets/format-inventory.md`. Le workflow C/Linux conserve uniquement un manifeste avec environnement, identifiants des dépendances détectées, hashes des définitions, tailles et SHA-256 des sorties, sans les exécutables.
 
 Les nouveaux workflows P-1 devront définir :
 - événements `push`, `pull_request`, branches et chemins concernés ;

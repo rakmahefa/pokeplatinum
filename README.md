@@ -26,16 +26,17 @@ Toujours vérifier le HEAD réel de la branche `pc_port` sur GitHub avant de com
 
 ## État de l'automatisation
 
-- Les anciens workflows Linux, Windows et ARM ont été copiés à l'identique dans `docs/operations/workflow-archive/2026-10-22/`, puis retirés de `.github/workflows/` pour commencer la refonte P-1. Ils ne doivent pas être réactivés sans revue.
-- Les anciens workflows Linux, Windows et ARM sont archivés et ne sont pas actifs. Deux workflows de remplacement sont prévus pour cette phase : `preparation-checks.yml` vérifie la syntaxe et le déterminisme de l'inventaire ; `baseline-c-linux.yml` construit la référence C/Linux sans publier les exécutables, et conserve uniquement un manifeste SHA-256 de sorties.
-- Le runbook initial de baseline C/Linux se trouve dans `docs/operations/c-baseline.md`. L'exécution locale froide et les preuves d'artefacts restent à enregistrer.
-- `tools/scripts/repo_inventory.py` inventorie l'arbre Git versionné de façon déterministe. Le workflow `preparation-checks.yml` compare deux rapports identiques et téléverse le JSON de métadonnées (chemins, tailles, SHA des blobs, sans contenu de fichier) comme artefact conservé 14 jours. Le premier snapshot synthétique est décrit dans [l'inventaire des formats](docs/assets/format-inventory.md).
+- Les workflows historiques Linux, Windows et ARM sont archivés à l'identique dans `docs/operations/workflow-archive/2026-10-22/` et retirés de `.github/workflows/`.
+- Deux workflows de préparation sont actifs : `preparation-checks.yml` vérifie la syntaxe et le déterminisme de l'inventaire, puis conserve un JSON de métadonnées ; `baseline-c-linux.yml` construit le port C/Linux et conserve les empreintes de sorties sans publier les exécutables.
+- Le run [baseline-c-linux 39724681527](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724681527) a terminé avec succès sur `7a07925`. Le runbook consigne tailles et SHA-256 : [baseline C/Linux](docs/operations/c-baseline.md).
+- `tools/scripts/repo_inventory.py` a été exécuté deux fois par CI avec des sorties identiques. Son premier snapshot et les extensions à confirmer sont documentés dans [l'inventaire des formats](docs/assets/format-inventory.md).
+- L'audit de wrappers a identifié des références Git mutables (`main`, `nx_support`) et des notices de licence à vérifier ; voir [provenance et licences](docs/assets/provenance-and-licenses.md).
 - Les lots liés doivent toujours être publiés en une seule mise à jour de référence ; voir la politique commits/CI.
-- Le workspace Rust `engine/`, `xtask` et les nouveaux workflows restent à créer pendant P-1.
+- Le workspace Rust `engine/`, `xtask`, le spike Bevy et la CI Rust restent à créer pendant P-1.
 
 ## Première étape recommandée
 
-Reprendre **P-1.1 — Baseline C/PC reproductible** avec le [runbook initial](docs/operations/c-baseline.md), puis exécuter et consigner le [premier inventaire Git](tools/scripts/repo_inventory.py) pour alimenter P-1.2. Ne déclarer aucun build ou test réussi sans l'avoir exécuté.
+Continuer P-1.1 en reproduisant localement le [build C/Linux](docs/operations/c-baseline.md) et en lançant une première scène repère ; poursuivre P-1.2 avec le [rapport d'inventaire](docs/assets/format-inventory.md) et le [relevé de provenance/licences](docs/assets/provenance-and-licenses.md). Le build GitHub de référence est passé, mais la parité runtime n'est pas encore établie.
 
 ## Règle de travail
 

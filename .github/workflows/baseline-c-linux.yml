@@ -82,6 +82,36 @@ jobs:
       - name: Build Linux target
         run: ./drun.sh make linux
 
+      - name: Record resolved build dependency metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          metadata="$RUNNER_TEMP/resolved-dependencies.txt"
+          {
+            printf 'docker_image_id=%s\n' "$(docker image inspect pokeplatinum-build --format '{{.Id}}')"
+            printf 'wrap_definition_sha256_begin\n'
+            find subprojects -maxdepth 1 -type f \( -name '*.wrap' -o -name 'update.ini' \) -print0 | sort -z | xargs -0 -r sha256sum
+            printf 'wrap_definition_sha256_end\n'
+            if [ -f subprojects/.wraplock ]; then
+              sha256sum subprojects/.wraplock
+            else
+              printf 'wraplock=not-present\n'
+            fi
+            printf 'resolved_git_subprojects_begin\n'
+            found=0
+            while IFS= read -r -d '' marker; do
+              directory="${marker%/.git}"
+              if sha="$(git -C "$directory" rev-parse HEAD 2>/dev/null)"; then
+                printf '%s %s\n' "$sha" "$directory"
+                found=1
+              fi
+            done < <(find subprojects \( -type d -o -type f \) -name .git -print0 | sort -z)
+            if [ "$found" -eq 0 ]; then
+              printf 'No git repositories resolved under subprojects\n'
+            fi
+            printf 'resolved_git_subprojects_end\n'
+          } | tee "$metadata"
+
       - name: Hash expected build outputs without packaging binaries
         shell: bash
         run: |
@@ -90,8 +120,8 @@ jobs:
           test -d "$build_dir"
           manifest="$RUNNER_TEMP/c-baseline-linux-manifest.txt"
           {
-            printf 'source_sha=%s\n' "$(git rev-parse HEAD)"
-            printf 'platform=%s\n' "$(uname -srm)"
+            cat "$RUNNER_TEMP/baseline-environment.txt"
+            cat "$RUNNER_TEMP/resolved-dependencies.txt"
             for name in firmware.bin header.bin main pokeplatinum.AppImage; do
               path="$build_dir/$name"
               if [ ! -s "$path" ]; then
@@ -108,7 +138,7 @@ jobs:
             printf '## C/Linux reference build\n\n'
             printf '* Source commit: `%s`\n' "$(git rev-parse HEAD)"
             printf '* Manifest SHA-256: `%s`\n\n' "$manifest_sha"
-            printf 'The artifact below contains hashes and sizes only; no executables are uploaded.\n\n'
+            printf 'The artifact below contains metadata, hashes and sizes only; no executables are uploaded.\n\n'
             printf '```text\n'
             cat "$manifest"
             printf '```\n'

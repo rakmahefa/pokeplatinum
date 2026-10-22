@@ -27,28 +27,35 @@ L'utilisateur a confirmé qu'il s'agit de son fork et a demandé de supprimer le
 
 ## 3. État Git connu
 
-HEAD inspecté avant le présent lot : `445533d142aee68f87fdf0852b9f14ec00f7ca66`. Après chaque publication, relire le HEAD réel de `pc_port` sur GitHub ; cette SHA est un repère historique.
+HEAD vérifié avant le présent lot : `f5e12b8325f0941a7fa901aa88e28a5090cd8fb1`. Toujours relire le HEAD réel de `pc_port` avant d'agir ; cette SHA est un repère historique.
 
 Commits vérifiés de ce chantier :
 - `4e42a86afe9dcd4aff2c0cdba4a0f596a427a955` — archive exacte des trois workflows historiques ;
-- `a0ab305b6fc52a0e5e2b95fd64abd31a4b388a0e` — retrait des fichiers actifs ;
-- `e71df0f741f7bc18f0567f102ed46de86c020cd7` — runbook initial et outil d'inventaire ;
+- `a0ab305b6fc52a0e5e2b95fd64abd31a4b388a0e` — retrait des trois entrées actives ;
+- `e71df0f741f7bc18f0567f102ed46de86c020cd7` — runbook initial et script d'inventaire ;
 - `b58233c4d47f56b75d863200e557bf989948d3e6` — workflow de contrôle docs/inventaire ;
 - `7a07925f620e327e2126d2af931785ed35a563a8` — workflow de build C/Linux ;
-- `445533d142aee68f87fdf0852b9f14ec00f7ca66` — conservation de l'artefact d'inventaire.
+- `445533d142aee68f87fdf0852b9f14ec00f7ca66` — artefact de l'inventaire ;
+- `fef27a2cb5c31356ddddcf14693784febea56b08` — premier relevé résumé des formats/extensions ;
+- `f5e12b8325f0941a7fa901aa88e28a5090cd8fb1` — complétion de la table des répertoires du snapshot.
 
 Résultats vérifiés :
-- [Workflow preparation-checks run 39724440638](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724440638) : `success`. Syntaxe du script validée ; deux JSON identiques ; résumé de l'arbre : 27 711 blobs et 138 519 605 octets au commit `b58233c`.
-- [Workflow preparation-checks run 39724791913](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724791913) : `success`. Artefact `repository-inventory-445533d142aee68f87fdf0852b9f14ec00f7ca66`, rapport JSON de métadonnées retenu 14 jours. Son snapshot comprend 27 712 blobs et 138 524 927 octets au commit `445533d`.
-- Le snapshot est résumé dans [`docs/assets/format-inventory.md`](docs/assets/format-inventory.md) : volumes par répertoire, extensions dominantes et plus gros blobs, avec les formats non confirmés marqués comme hypothèses.
-- Le nouveau build [baseline-c-linux run 39724681527](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724681527) a été lancé sur le commit `7a07925`. Au dernier contrôle, `make skrew` était terminé et `make linux` était en cours ; aucun résultat final ni manifeste de checksum n'est encore confirmé.
+- [Workflow preparation-checks run 39724440638](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724440638) : `success`, script syntaxiquement valide et deux JSON identiques (27 711 blobs / 138 519 605 octets au commit `b58233c`).
+- [Workflow preparation-checks run 39724791913](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724791913) : `success`, artefact JSON conservé 14 jours. Snapshot au commit `445533d` : 27 712 blobs / 138 524 927 octets.
+- [Workflow preparation-checks run 39725079397](https://github.com/rakmahefa/pokeplatinum/actions/runs/39725079397) : `success`, inventaire régénéré et artefact de métadonnées conservé.
+- [Build C/Linux run 39724681527](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724681527) : `success` sur le commit `7a07925`. `make skrew`, `make linux`, les quatre sorties attendues et le manifeste SHA-256 sont validés.
+- Artefact de build `c-baseline-linux-7a07925f620e327e2126d2af931785ed35a563a8`, ID `12403101714`, ZIP 485 octets contenant le manifeste uniquement. Les tailles, checksums et hash du manifeste figurent dans [`docs/operations/c-baseline.md`](docs/operations/c-baseline.md).
+- L'inventaire initial des formats/volumes est résumé dans [`docs/assets/format-inventory.md`](docs/assets/format-inventory.md). Un relevé de wrappers, licences visibles et risques de reproductibilité est ajouté dans [`docs/assets/provenance-and-licenses.md`](docs/assets/provenance-and-licenses.md).
+- Limite notable : le build réussi sur `7a07925` n'enregistrait pas les SHAs exactes des checkouts Git de dépendances. Le prochain run doit capturer ces références ; les wrappers comprennent encore `main` et `nx_support`.
 
-Les workflows historiques Linux/ARM (`39722714025`, `39722714020`) ont réussi au commit `ef958c9`. Le workflow Windows historique (`39722714273`) était encore indiqué `in_progress` au dernier relevé et demeure non confirmé. Les copies des trois fichiers sont sous `docs/operations/workflow-archive/2026-10-22/`.
+Les workflows historiques Linux/ARM (`39722714025`, `39722714020`) ont réussi au commit `ef958c9`. Le workflow Windows historique (`39722714273`) était encore indiqué `in_progress` au dernier relevé de l'API et n'est pas considéré comme confirmé. Les trois fichiers sont sauvegardés dans `docs/operations/workflow-archive/2026-10-22/`.
 
 ## 4. Documents à lire en premier
 
 1. **[audit.md](audit.md)** — analyse du projet existant, architecture cible, matrice des systèmes, migration progressive, phases P0–P3, risques et tests.
 2. **[docs/architecture/PREPARATION.md](docs/architecture/PREPARATION.md)** — plan P-1 détaillé, automatisation, workflows, caches, documentation à créer et checklist de sortie avant P0.
+3. **[docs/operations/c-baseline.md](docs/operations/c-baseline.md)** — preuve du build C/Linux et critères runtime encore ouverts.
+4. **[docs/assets/format-inventory.md](docs/assets/format-inventory.md)** et **[docs/assets/provenance-and-licenses.md](docs/assets/provenance-and-licenses.md)** — volumes, formats présumés, dépendances et provenance initiales.
 3. Documentation historique restaurée qui sera utile au portage :
    - [2D rendering](docs/2d_rendering.md)
    - [3D rendering](docs/3d_rendering.md)
@@ -85,14 +92,14 @@ La chaîne Meson/Linux/Windows/ARM doit continuer à fonctionner pendant P-1. Ne
 
 ## 6. Phase en cours : P-1 — Préparation
 
-**Statut : P-1.1 amorcé ; P0 non commencé.** Ce lot sauvegarde et retire les workflows hérités, ajoute un runbook C/Linux initial et un premier outil d'inventaire. Ces livrables sont écrits mais pas encore tous exécutés/validés.
+**Statut : P-1.1 compilation CI validée, parité runtime encore ouverte ; P0 non commencé.** Le build C/Linux dédié passe sur `7a07925` et son manifeste de checksums est conservé sans exécutable. Le runbook local froid et la première scène repère restent à établir.
 
-1. **P-1.1 — Baseline C/PC** : procédure initiale dans [`docs/operations/c-baseline.md`](docs/operations/c-baseline.md). Build local froid, sorties exactes, checksum et première scène repère restent à vérifier.
-2. **P-1.2 — Inventaire** : script [`tools/scripts/repo_inventory.py`](tools/scripts/repo_inventory.py) exécuté deux fois par CI avec des sorties JSON identiques ; premier artefact obtenu et résumé dans [`docs/assets/format-inventory.md`](docs/assets/format-inventory.md). La classification sémantique, les producteurs/consommateurs, les formats et la provenance/licences restent à vérifier.
+1. **P-1.1 — Baseline C/PC** : build GitHub réussi, quatre sorties et SHA-256 documentés dans [`docs/operations/c-baseline.md`](docs/operations/c-baseline.md). Exécution locale froide, capture d'une scène repère et validation runtime restent à faire.
+2. **P-1.2 — Inventaire** : script [`tools/scripts/repo_inventory.py`](tools/scripts/repo_inventory.py) exécuté deux fois par CI avec des JSON identiques ; premier artefact résumé dans [`docs/assets/format-inventory.md`](docs/assets/format-inventory.md). Les refs Git mutables et les licences visibles sont consignées dans [`docs/assets/provenance-and-licenses.md`](docs/assets/provenance-and-licenses.md). Il reste à cartographier les producteurs/consommateurs et à verrouiller les dépendances.
 3. **P-1.3 — Parité fonctionnelle** : feature matrix, parcours vertical et fixtures.
 4. **P-1.4 — ADR et spike Bevy** : frontières Bevy/domaine, deux surfaces logiques, coordonnées, tick/RNG, voie de rendu et choix final de version.
 5. **P-1.5 — Toolchain/qualité** : workspace indépendant, version Rust stable fixée, `Cargo.lock`, fmt/clippy/tests.
-6. **P-1.6 — CI de remplacement** : le workflow docs/inventaire est vert ; le workflow dédié au build C/Linux est ajouté dans ce lot ; la CI Rust (formatage, tests, build minimal) reste à concevoir.
+6. **P-1.6 — CI de remplacement** : les workflows docs/inventaire et C/Linux sont actifs ; tous deux ont déjà réussi au moins un run. La CI Rust (formatage, tests, build minimal) reste à concevoir.
 7. **P-1.7 — `xtask`** : `doctor`, `inventory`, contrôles de génération, vérification de manifests ; sorties déterministes et mode dry-run.
 8. **P-1.8 — Documentation/sécurité** : guides de développement, provenance des assets, licences, workflows et cache.
 9. **P-1.9 — Profilage** : protocole reproductible et baseline initiale, sans seuil arbitraire au début.
@@ -133,12 +140,12 @@ Les workflows actifs ont été recréés séparément : `.github/workflows/prepa
 
 ## 9. Prochaines actions recommandées
 
-1. Examiner le résultat du nouveau workflow `baseline-c-linux.yml` et son manifeste SHA-256 ; comparer avec le protocole froid de `docs/operations/c-baseline.md` et noter les dépendances locales restantes sans ajouter de binaire ou d'asset privé à Git.
-2. Exécuter `python3 tools/scripts/repo_inventory.py --revision HEAD --output /tmp/pokeplatinum-inventory.json`, contrôler le JSON, puis archiver uniquement un rapport expurgé/non sensible si utile.
-3. Compléter P-1.2 : cibles Meson/Make, dépendances/subprojects, générateurs, formats de ressources et provenance/licences.
-4. Concevoir les nouveaux workflows avant de les activer : validation docs, contrôles CI Rust légers, jobs d'intégration séparés ; permissions minimales, paths pertinents, caches non essentiels et annulation obsolète.
-5. Poursuivre P-1.3/P-1.4 : feature matrix, parcours vertical fondé sur les données réellement disponibles et ADR.
-6. Mettre à jour ce handoff avec les résultats mesurés et le nouvel HEAD.
+1. Relancer `baseline-c-linux.yml` enrichi and review the recorded Docker image, wrap hashes and resolved dependency SHAs; pin mutable refs only after review and a successful rebuild.
+2. Exécuter le protocole local de build à froid and document the launch/configuration requirements for a scene-reference capture.
+3. Terminer P-1.2 en cartographiant les producteurs/consommateurs des ressources, les fichiers générés, les usages des dépendances et les licences/provenance.
+4. Poursuivre P-1.3/P-1.4 : matrice de fonctionnalités, parcours vertical fondé sur les ressources réellement disponibles et ADR.
+5. Créer le workspace/toolchain Rust et un `rust-pr.yml` minimal uniquement après approbation du spike Bevy et des frontières de workspace.
+6. Mettre à jour ce handoff avec les résultats mesurés et le nouveau HEAD.
 
 Ne pas déclarer la baseline validée, un script testé ou un workflow vert tant que ces résultats n'ont pas été obtenus et vérifiés.
 

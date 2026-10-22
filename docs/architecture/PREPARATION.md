@@ -1,6 +1,6 @@
 # Phase Préparation — sécuriser le chantier Rust + Bevy
 
-> Statut : proposition de plan, préalable obligatoire à P0  
+> Statut : phase en cours — compilation C/Linux initiale réussie, validations runtime et verrouillage des dépendances encore ouverts ; préalable obligatoire à P0  
 > Dépôt : rakmahefa/pokeplatinum — branche de travail : pc_port  
 > Date de rédaction : 2026-10-22  
 > Référence de stratégie : audit.md
@@ -45,6 +45,7 @@ La phase est terminée lorsque chaque point de la checklist de sortie de la sect
 
 - Enregistrer le commit de référence, les sous-modules/sous-projets, les versions d'outils et les commandes de compilation.
 - Faire au moins un build Linux propre documenté et définir ce que signifie « build de référence valide ».
+- **Résultat enregistré :** [run baseline-c-linux 39724681527](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724681527) réussi sur la révision `7a07925f620e327e2126d2af931785ed35a563a8` ; les quatre sorties attendues, tailles et SHA-256 sont dans [`docs/operations/c-baseline.md`](../operations/c-baseline.md). Ce résultat valide la compilation CI, pas encore le lancement du runtime ni une baseline visuelle.
 - Conserver les logs de compilation et les checksums de sortie comme artefacts temporaires de référence, sans publier de données propriétaires.
 - Capturer des scènes repères à des moments reproductibles : titre, intérieur, route, dialogue, menu, transition de carte, rencontre, combat, sauvegarde/chargement.
 - Documenter la procédure de lancement, la configuration de touches et les raccourcis de debug existants.
@@ -67,6 +68,8 @@ Le rapport doit distinguer le code du jeu, les outils, les ressources brutes, le
 Un premier snapshot de volumes/extensions, issu du rapport automatisé, est conservé dans [`docs/assets/format-inventory.md`](../assets/format-inventory.md). Les familles d'extension qui n'ont pas encore été confirmées par un parseur ou un consommateur explicite y sont marquées comme hypothèses, pas comme spécifications validées.
 
 ### A3. Inventaire de provenance et licences
+
+Un relevé initial des wrappers, refs mutables et fichiers de licence visibles est conservé dans [`docs/assets/provenance-and-licenses.md`](../assets/provenance-and-licenses.md). Il est explicitement non exhaustif : les références Git doivent être résolues puis verrouillées après revue, et la licence/provenance des ressources doit être documentée par famille.
 
 - Dresser la liste des licences et notices propres au code, aux sous-projets, outils et dépendances.
 - Identifier les catégories d'assets dont la redistribution est interdite ou incertaine.

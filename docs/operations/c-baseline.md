@@ -1,57 +1,64 @@
-# Baseline C/Linux — procédure reproductible
+# Baseline C/Linux — procédure et première preuve
 
-> **État au 2026-10-22 :** runbook initial écrit ; une exécution locale froide n'a pas encore été réalisée dans cette session. Ne pas déclarer la baseline reproductible avant d'avoir enregistré les preuves d'une exécution propre.
+> **État au 2026-10-22 :** le workflow dédié a effectué un build C/Linux réussi sur un runner GitHub Actions Ubuntu 24.04. L'exécution locale froide et le lancement visuel du runtime restent à effectuer ; la baseline de compilation est établie, la baseline fonctionnelle ne l'est pas encore.
 
-## 1. Révision candidate
+## 1. Révision effectivement compilée
 
 - Dépôt : `https://github.com/rakmahefa/pokeplatinum.git`
 - Branche : `pc_port`
-- Révision candidate déjà utilisée par la CI historique : `ef958c943b2fd535750e8e4c80215942aebaf465`
-- Build Linux historique : [run 39722714025](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714025), conclusion GitHub Actions `success`.
-- Build ARM historique : [run 39722714020](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714020), conclusion `success`.
-- Build Windows historique : [run 39722714273](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714273), encore indiqué `in_progress` lors du dernier relevé ; résultat final non confirmé.
+- Commit construit : `7a07925f620e327e2126d2af931785ed35a563a8`
+- Run : [baseline-c-linux — 39724681527](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724681527)
+- Résultat : `success`.
+- Étapes réussies : installation des paquets hôte, checkout, détection de l'environnement Docker, `make skrew`, `make linux`, validation des quatre sorties, calcul des SHA-256 et téléversement du manifeste uniquement.
+- Environnement rapporté : `Linux 7.0.0-1017-azure x86_64`.
+- Artefact de vérification : [c-baseline-linux-7a07925f620e327e2126d2af931785ed35a563a8](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724681527), artefact ID `12403101714`, ZIP de 485 octets. Aucun exécutable n'a été téléversé.
 
-Ces statuts attestent uniquement de l'exécution des jobs historiques. Le workflow nouveau [baseline-c-linux.yml](../../.github/workflows/baseline-c-linux.yml) est conçu pour effectuer un build ciblé sur les changements C/build ou sur déclenchement manuel, puis conserver un manifeste des tailles et SHA-256 sans téléverser les exécutables. Tant que son premier run n'a pas fini et que ses sorties ne sont pas examinées, la baseline reste **candidate**, pas validée.
+L'arbre de code C n'a pas été modifié dans ce lot de préparation : le commit `7a07925` est la révision exacte capturée par le workflow et doit être utilisée lorsque l'on veut reproduire **ce run précis**. Les builds Linux/ARM historiques sur `ef958c9` sont des éléments de contexte, pas un substitut à ce run.
 
-## 2. Prérequis
+## 2. Sorties vérifiées par SHA-256
+
+Les quatre fichiers étaient présents, non vides, sous `build_linux/pokeplatinum/`. Les noms, tailles et empreintes suivants proviennent du manifeste téléchargé depuis le run CI :
+
+| Sortie | Taille (octets) | SHA-256 |
+|---|---:|---|
+| `firmware.bin` | 1 584 | `623d2357e4dce812edae3411e7877ed2c5408953bf7cde7ec38d10a9bd0bdfb6` |
+| `header.bin` | 352 | `b42bcf480f162ca32ecdaa38006ae4bf4b57e6c095006113b83a0bf9274361b3` |
+| `main` | 70 963 760 | `6b2b77704f86d544bb2054c77edc11d9b4068da6502b53eb760304177ef9ccf7` |
+| `pokeplatinum.AppImage` | 39 004 664 | `18ad5e3a3245afde662ac20400136af3366a89913b402617047c1fb43aeefbcf` |
+
+SHA-256 du fichier de manifeste décompressé lui-même : `20700e4f4812727e97199acbc02fe2948cd4283ec8ea276b3eda9f51431a6159`.
+
+Ces empreintes sont une référence observée sur ce runner, pas une garantie de reproductibilité bit à bit sur une autre machine. Le premier run ne conservait pas encore les révisions exactes des dépendances Git téléchargées ; le workflow est maintenant renforcé pour les enregistrer lors des prochains builds.
+
+## 3. Prérequis et reproduction locale
 
 - Git et un clone propre du dépôt.
 - Docker Engine/CLI installé, démarré et utilisable par l'utilisateur courant.
 - Les permissions locales requises par `drun.sh` pour utiliser Docker, `/dev/fuse` et l'affichage X11 monté dans le conteneur.
-- Les paquets hôte présents dans le runner historique Linux : `fuse`, `git`, `python3`, `wget`, `zip`. Le runner GitHub disposait aussi de Docker.
-- Assez d'espace disque pour l'image Docker, les dépendances téléchargées et le build.
+- Les paquets hôte utilisés par le runner : `fuse`, `git`, `python3`, `wget`, `zip`.
+- De l'espace disque pour l'image, les dépendances téléchargées et le build.
+- Une connexion réseau pour les références Meson/subprojects utilisées par le build.
 
-`drun.sh` ne construit l'image `pokeplatinum-build` que si elle n'existe pas. Une ancienne image locale peut donc affecter la reproductibilité. Sur une machine persistante, utiliser une image fraîche et vérifier sa provenance. Ne supprimer aucun conteneur ou volume utilisateur pour « nettoyer » le build.
-
-## 3. Protocole Linux
-
-Utiliser un clone séparé afin de garder la révision candidate immuable. Ne pas placer de ROM, de sauvegarde personnelle ou de ressource extraite non redistribuable dans ce clone pour ce protocole.
+Utiliser un clone séparé pour garder la révision compilée immuable. Ne pas y placer de ROM, de sauvegarde personnelle ou de ressource extraite non redistribuable.
 
 ```bash
 git clone --branch pc_port https://github.com/rakmahefa/pokeplatinum.git
 cd pokeplatinum
-git switch --detach ef958c943b2fd535750e8e4c80215942aebaf465
+git switch --detach 7a07925f620e327e2126d2af931785ed35a563a8
 git status --short
 git rev-parse HEAD
 docker version
-```
-
-Avant le build, `git status --short` doit être vide et `git rev-parse HEAD` doit afficher exactement la SHA de la révision candidate.
-
-Reproduire les commandes de compilation utilisées dans le runner Linux historique :
-
-```bash
 GITHUB_ACTIONS=true ./drun.sh make skrew
 GITHUB_ACTIONS=true ./drun.sh make linux
 ```
 
-La variable `GITHUB_ACTIONS=true` demande à `drun.sh` d'utiliser l'argument de build Docker `USE_DEVKITPRO=0`, comme dans GitHub Actions. Sur un runner vierge, l'image du projet est absente et le wrapper la construit automatiquement. Sur une machine persistante, utiliser une image fraîche et noter sa provenance.
+Avant le build, `git status --short` doit être vide et `git rev-parse HEAD` doit afficher exactement la SHA indiquée. `GITHUB_ACTIONS=true` demande à `drun.sh` d'utiliser `USE_DEVKITPRO=0`, comme sur GitHub Actions. Le script réutilise l'image locale `pokeplatinum-build` si elle existe déjà ; pour une comparaison propre, noter cette image et éviter de remplacer des conteneurs/volumes utilisateur.
 
-Le workflow historique exécutait ensuite `tools/scripts/package_artifacts_linux.sh` ; sa cible configurée était `build_linux/pokeplatinum/release_linux`. Ne considérer l'empaquetage comme faisant partie de la baseline qu'après confirmation des sorties exactes du build.
+Les dépendances `subprojects/*.wrap` contiennent encore des références Git mutables telles que `main`. Le successful run ci-dessus prouve que cette résolution a compilé à cet instant, mais son manifeste initial ne capture pas les commits réellement résolus. La revue du [registre de provenance et licences](../assets/provenance-and-licenses.md) traite ce risque ; une reproduction bit à bit ne doit pas être annoncée avant d'avoir verrouillé et vérifié ces références.
 
-## 4. Journal de preuve local
+## 4. Journal local
 
-Depuis la racine du clone, stocker la sortie complète dans un répertoire local **hors Git**. Ne pas ajouter automatiquement ce journal à un artefact CI ou au dépôt.
+Conserver les logs complets dans un répertoire local hors Git. La commande suivante s'arrête au premier échec et conserve la sortie pour le diagnostic :
 
 ```bash
 set -euo pipefail
@@ -67,24 +74,26 @@ LOG_DIR="$(mktemp -d /tmp/pokeplatinum-baseline.XXXXXX)"
 printf 'Journal local : %s\n' "$LOG_DIR/build-linux.log"
 ```
 
-En cas d'échec, conserver le code de sortie et le premier message d'erreur utile. Si l'environnement est corrigé puis qu'une nouvelle tentative est lancée, enregistrer cette tentative séparément avec le changement effectué.
+Une sortie de commande locale différente doit être analysée séparément, avec le code de sortie et l'environnement. Ne pas remplacer un échec par une réussite supposée.
 
-## 5. Critères de validation
+## 5. État de validation
 
-La baseline n'est validée que si :
+| Critère | État |
+|---|---|
+| Révision et run CI de compilation fixés | Validé pour le build du commit `7a07925` |
+| `make skrew` et `make linux` réussis | Validé sur le runner GitHub du run 39724681527 |
+| Quatre sorties présentes et checksums enregistrés | Validé ; manifeste limité aux métadonnées |
+| Révisions exactes des dépendances capturées dans le premier run | Non ; workflow renforcé pour le prochain run |
+| Reproduction locale froide indépendante | À exécuter |
+| Lancement de l'application et capture d'une scène repère | À exécuter avec les données nécessaires |
+| Baseline fonctionnelle/parité visuelle | Non établie |
 
-1. la SHA de référence est fixée et l'arbre de travail était propre avant le build ;
-2. l'image Docker, les variables du chemin de compilation et les prérequis sont identifiés ;
-3. `make skrew` et `make linux` terminent tous deux avec un code 0 ;
-4. la sortie attendue est identifiée dans le dossier de build, avec sa taille et son SHA-256 consignés localement ;
-5. les besoins de données et les dépendances locales éventuelles sont compris et documentés ;
-6. une procédure de lancement et une première scène repère fonctionnent sur une machine disposant des données nécessaires.
-
-Les points 3 à 6 ne sont pas confirmés par une exécution locale enregistrée dans le handoff.
+La baseline de **compilation CI** est donc établie. La baseline globale C/PC reste ouverte jusqu'à ce que les dépendances soient verrouillées ou enregistrées, qu'une reproduction locale soit tentée et qu'un premier scénario runtime soit documenté.
 
 ## 6. Hygiène des données
 
-- Ne committer aucun log complet de machine, ROM, sauvegarde utilisateur, asset privé, licence confidentielle ou artefact binaire.
+- Ne committer aucun log complet de machine, ROM, sauvegarde utilisateur, asset privé ou artefact binaire.
 - Ne téléverser aucun de ces éléments dans les artefacts CI.
+- Le workflow ne conserve que les métadonnées (révision, environnement, révisions de dépendances quand disponibles, tailles et empreintes SHA-256), pas les exécutables du jeu.
 - Un hash prouve l'identité d'un fichier, pas son autorisation de redistribution.
 - Répéter le protocole après un changement volontaire de la révision de référence, du Dockerfile ou des scripts de génération.
