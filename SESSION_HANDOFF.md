@@ -27,16 +27,19 @@ L'utilisateur a confirmé qu'il s'agit de son fork et a demandé de supprimer le
 
 ## 3. État Git connu
 
-HEAD de référence actuel : `1597fd3079f7d425be4d3a0867c4aaff08d9d89c` — commit **“Add mandatory preparation phase before P0”**.
+HEAD confirmé au début de cette reprise : `0a47767afaaef6a0238fc71f46e7332fdb8f66e9` — commit **“docs: specify Git Data API batching procedure”**, daté du 2026-10-22 à 04:31:29 UTC. Cette SHA est le point de départ de cette inspection, pas une garantie sur la tête de branche lors d'une session future.
 
-Commits récents utiles :
-- `97fa73d23da9cddd00fc314dc3b1543f45bcc7ff` — suppression des documents généraux et de `AGENTS.md` originaux concernés.
-- `e6a36019c67e49cd80b16a63347a16f2ca51646f` — restauration du dossier `docs/` (20 fichiers Markdown) depuis l'arbre précédent.
-- `f48869bde35a76f2bf814dc93380e1c3e1829e2f` — ajout d'`audit.md`.
-- `f70a030a0339c41f02e18662840265aed7436b67` — ajout du plan de préparation.
-- `1597fd3079f7d425be4d3a0867c4aaff08d9d89c` — insertion du résumé P-1 dans `audit.md`.
+Commits récents vérifiés sur `pc_port` :
+- `ef958c943b2fd535750e8e4c80215942aebaf465` — **“Add batched commit and stale CI run policy”** : concurrence des workflows historiques et permissions minimales ;
+- `5c0b6bac5b780427ae664456e9e7372579449237` — **“docs: add migration project entrypoint”** : point d'entrée README ;
+- `0a47767afaaef6a0238fc71f46e7332fdb8f66e9` — documentation de la procédure de commits groupés via Git Data API.
 
-Avant toute écriture ultérieure, relire le HEAD de `pc_port` : de nouveaux commits peuvent avoir été ajoutés après cette note.
+Les runs GitHub Actions suivants avaient été déclenchés sur le commit `ef958c943b2fd535750e8e4c80215942aebaf465` :
+- Linux : [run 39722714025](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714025) ;
+- Windows : [run 39722714273](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714273) ;
+- ARM : [run 39722714020](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714020).
+
+Lors de la vérification du 2026-10-22 vers 04:34 UTC, les trois runs étaient toujours signalés `in_progress`, avec l'étape de compilation en cours ; aucune conclusion réussie ou échouée n'était encore disponible. Le HEAD `0a47767` ne diffère du commit testé que par des changements documentaires (ajout de `README.md` et mise à jour de la politique CI), ignorés par les workflows historiques via `paths-ignore`. Vérifier à nouveau le HEAD et les runs avant toute nouvelle décision.
 
 ## 4. Documents à lire en premier
 
@@ -120,7 +123,9 @@ Documents de préparation proposés dans `docs/architecture/`, `docs/migration/`
 
 ## 8. État après politique CI
 
-Les workflows historiques `.github/workflows/build_linux.yml`, `build_win.yml` et `build_arm.yml` sont configurés pour annuler les exécutions obsolètes sur une même référence et fonctionner avec `contents: read`. La politique ne remplace pas le besoin de regrouper les mises à jour de référence avant de les publier. Aucun workflow Rust n'est déclaré opérationnel à ce stade.
+Les workflows historiques `.github/workflows/build_linux.yml`, `build_win.yml` et `build_arm.yml` possèdent une clé de concurrence par workflow et par branche/PR avec `cancel-in-progress: true`, ainsi que `permissions: contents: read`. Les builds historiques ignorent les changements uniquement Markdown. Cela évite les compilations jeu pour la documentation, mais aucun workflow de validation documentaire dédié n'existe encore.
+
+La dernière observation des runs Linux/Windows/ARM est consignée en section 3. Tant qu'une conclusion finale n'est pas visible dans GitHub Actions, ne pas annoncer la baseline ou ces builds comme réussis. Aucun workflow Rust, workspace `engine/` ou outil `xtask` n'est déclaré opérationnel à ce stade.
 
 ## 9. Prochaines actions recommandées dans la nouvelle session
 
