@@ -4,7 +4,7 @@
 > **Dernière mise à jour :** 2026-10-22  
 > **Dépôt :** https://github.com/rakmahefa/pokeplatinum  
 > **Branche de travail :** `pc_port`  
-> **HEAD au moment de la rédaction :** `1597fd3079f7d425be4d3a0867c4aaff08d9d89c`
+> **Règle HEAD :** toujours lire le HEAD actuel sur GitHub avant de reprendre ; une SHA inscrite dans ce document n'est qu'un point de référence historique.
 
 ## 1. Contexte et objectif
 
@@ -95,6 +95,10 @@ Le plan P-1 est divisé en paquets de travail :
 
 L'ordre détaillé, les critères et la checklist sont dans `docs/architecture/PREPARATION.md`.
 
+## 7.1. Politique de commits et annulation des builds obsolètes
+
+La politique est documentée dans [docs/operations/commit-and-ci-policy.md](docs/operations/commit-and-ci-policy.md). Pour une série de changements, créer plusieurs commits localement si cela clarifie l'historique, puis faire un seul push. Depuis l'API GitHub, préparer blobs/arbre/commits puis déplacer la référence une seule fois ; éviter les écritures fichier par fichier sur la branche surveillée. Les workflows Linux/Windows/ARM ont une concurrence par workflow et branche/PR, avec annulation des runs obsolètes. Vérifier le HEAD courant au début de chaque session.
+
 ## 7. Automatisation et documentation envisagées
 
 ### Workflows à ajouter séparément des workflows historiques
@@ -103,6 +107,7 @@ L'ordre détaillé, les critères et la checklist sont dans `docs/architecture/P
 - `.github/workflows/rust-integration.yml` : tests headless et d'intégration, génération et assets avec fixtures approuvées ;
 - `.github/workflows/rust-nightly.yml` : maintenance planifiée, licences/advisories, docs et tendance des benchmarks ;
 - `.github/workflows/rust-profile.yml` : profilage lancé manuellement sur un runner connu ;
+- politique de commits groupés et d'annulation CI : [commit-and-ci-policy.md](docs/operations/commit-and-ci-policy.md) ;
 - workflow de release seulement plus tard, avec permissions de publication strictement isolées.
 
 Caches proposés :
@@ -113,11 +118,15 @@ Caches proposés :
 
 Documents de préparation proposés dans `docs/architecture/`, `docs/migration/`, `docs/assets/`, `docs/operations/` : ADR, feature matrix, source map, stratégie de parité, inventaire des formats, provenance/licences, setup, CI/cache, profiling et stratégie de tests.
 
-## 8. Prochaines actions recommandées dans la nouvelle session
+## 8. État après politique CI
+
+Les workflows historiques `.github/workflows/build_linux.yml`, `build_win.yml` et `build_arm.yml` sont configurés pour annuler les exécutions obsolètes sur une même référence et fonctionner avec `contents: read`. La politique ne remplace pas le besoin de regrouper les mises à jour de référence avant de les publier. Aucun workflow Rust n'est déclaré opérationnel à ce stade.
+
+## 9. Prochaines actions recommandées dans la nouvelle session
 
 Commencer par examiner l'état actuel du dépôt et reprendre **P-1.1**, sans démarrer P0 prématurément :
 
-1. Lire `audit.md`, `docs/architecture/PREPARATION.md` et les workflows/builds actuels.
+1. Lire `SESSION_HANDOFF.md`, [la politique de commits/CI](docs/operations/commit-and-ci-policy.md), `audit.md`, `docs/architecture/PREPARATION.md` et les workflows/builds actuels.
 2. Vérifier si la cible Linux C peut être compilée de façon reproductible dans l'environnement disponible ; enregistrer les prérequis et les éventuels blocages sans inventer de résultats.
 3. Créer une procédure de baseline sous `docs/operations/`, avec commit source, commandes exactes, sortie attendue, logs et limitation liée aux données nécessitant une installation locale.
 4. Construire un inventaire reproductible, en commençant par un script qui analyse l'arbre Git, les extensions, tailles, fichiers générés et dépendances Meson.
@@ -127,7 +136,7 @@ Commencer par examiner l'état actuel du dépôt et reprendre **P-1.1**, sans d�
 
 Ne pas prétendre qu'un build, une capture, un benchmark ou un test est passé tant qu'il n'a pas été réellement exécuté.
 
-## 9. Règle de mise à jour de ce handoff
+## 10. Règle de mise à jour de ce handoff
 
 À chaque session substantielle, actualiser cette note pour enregistrer :
 - date et nouveau HEAD ;

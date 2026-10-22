@@ -199,6 +199,8 @@ Ne jamais introduire une commande d'extraction ou de téléversement qui envoie 
 
 Ne pas remplacer les workflows existants ARM/Linux/Windows qui construisent le port courant. Ajouter des workflows Rust dédiés, puis améliorer la politique actuelle par des changements indépendants.
 
+**Politique de commits et de concurrence CI :** voir [docs/operations/commit-and-ci-policy.md](../operations/commit-and-ci-policy.md). Les lots liés doivent être poussés en une seule mise à jour de référence (même si l'historique contient plusieurs commits). Les workflows lourds annulent les exécutions obsolètes pour la même branche/PR. Le batching limite les événements CI ; la concurrence n'est qu'un filet de sécurité, car un job annulé peut avoir déjà utilisé des ressources.
+
 1. **rust-pr.yml — rapide, à chaque PR**
    - checkout ;
    - installation du toolchain exact ;

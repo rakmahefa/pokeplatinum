@@ -10,13 +10,20 @@ on:
       - '**.md'
   workflow_dispatch:
 
+# Supersede obsolete builds when a newer commit arrives on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Build and artifact-upload jobs do not need write access to repository contents.
+permissions:
+  contents: read
+
 env:
   GITHUB_ACTIONS: "true"
 
 jobs:
   build_win:
-    permissions:
-      contents: write
     runs-on: windows-latest
     steps:
       - name: Checkout Repo

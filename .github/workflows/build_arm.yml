@@ -10,14 +10,21 @@ on:
       - '**.md'
   workflow_dispatch:
 
+# Supersede obsolete builds when a newer commit arrives on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Build and artifact-upload jobs do not need write access to repository contents.
+permissions:
+  contents: read
+
 env:
   LM_LICENSE_FILE: "${{ github.workspace }}/tools/cw/license.dat"
   BUILD: /var/tmp/pokeplatinum
 
 jobs:
   build_arm:
-    permissions:
-      contents: write
     runs-on: ubuntu-24.04
     steps:
       - name: Install Software
