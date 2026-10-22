@@ -1,6 +1,6 @@
 # Phase Préparation — sécuriser le chantier Rust + Bevy
 
-> Statut : phase en cours — compilation C/Linux historique réussie ; validation runtime et verrouillage des dépendances ouverts ; workflows actuels archivés, CI de remplacement à concevoir et valider avant P0  
+> Statut : phase en cours — compilation C/Linux historique réussie ; validation runtime et verrouillage des dépendances ouverts ; deux workflows de remplacement ajoutés, premiers runs à vérifier  
 > Dépôt : rakmahefa/pokeplatinum — branche de travail : pc_port  
 > Date de rédaction : 2026-10-22  
 > Référence de stratégie : audit.md
@@ -204,43 +204,26 @@ Ne jamais introduire une commande d'extraction ou de téléversement qui envoie 
 
 ### E1. Séparer les workflows
 
-Les anciens workflows ARM/Linux/Windows sont archivés sous `docs/operations/workflow-archive/2026-10-22/`. Les workflows de préparation précédemment actifs sont également sauvegardés sous `docs/operations/workflow-archive/current-active-2026-10-22/`, et aucun workflow n'est actif à ce checkpoint. Il faut concevoir un nouvel ensemble cohérent plutôt que réactiver les définitions archivées : contrôles documentaires/inventaire légers, build C/Linux avec chemins limités ou lancement manuel, puis contrôles Rust quand le workspace existe. Le design opérationnel est détaillé dans [`docs/operations/ci-and-caching.md`](../operations/ci-and-caching.md).
+Deux workflows de remplacement viennent d'être ajoutés dans .github/workflows/ :
 
-**Politique de commits et de concurrence CI :** voir [docs/operations/commit-and-ci-policy.md](../operations/commit-and-ci-policy.md). Les lots liés doivent être poussés en une seule mise à jour de référence (même si l'historique contient plusieurs commits). Les workflows lourds annulent les exécutions obsolètes pour la même branche/PR. Le batching limite les événements CI ; la concurrence n'est qu'un filet de sécurité, car un job annulé peut avoir déjà utilisé des ressources.
+1. **docs-inventory.yml — validation rapide**
+   - se déclenche pour les Markdown, docs/**, tools/scripts/** et sa propre définition ;
+   - vérifie la syntaxe Python de repo_inventory.py ;
+   - génère deux fois l'inventaire du HEAD, compare les JSON, puis valide le schéma ;
+   - conserve un JSON de métadonnées pendant 14 jours, sans téléverser les blobs des ressources.
+2. **baseline-c-linux.yml — baseline C/Linux**
+   - se déclenche automatiquement sur les sources C, ressources, générateurs de build et fichiers de configuration explicitement listés, ainsi que sa propre définition ;
+   - peut aussi être lancé manuellement ;
+   - exécute ./drun.sh make skrew puis ./drun.sh make linux ;
+   - valide les quatre sorties attendues et conserve uniquement les métadonnées/checksums, sans téléverser les exécutables.
 
-1. **rust-pr.yml — rapide, à chaque PR**
-   - checkout ;
-   - installation du toolchain exact ;
-   - restauration du cache Rust ;
-   - formatage (cargo fmt --check) ;
-   - contrôles de dépendances/manifestes ;
-   - clippy sur les crates créées ;
-   - tests unitaires et tests de parseurs synthétiques ;
-   - compilation Linux de l'application minimale.
+Les deux workflows déclarent contents: read, épinglent les actions externes à des SHA complets, et annulent les validations obsolètes pour une même branche/PR. Des changements uniquement documentaires ne démarrent pas la baseline C/Linux. La modification d'une définition de workflow déclenche le pipeline correspondant pour détecter une configuration cassée.
 
-2. **rust-integration.yml — intégration**
-   - compilation de tous les targets réellement supportés ;
-   - tests headless ;
-   - vérification du pipeline d'assets avec fixtures redistribuables ;
-   - tests de génération déterministe ;
-   - tests différentiels locaux désactivés quand les assets requis ne sont pas installés.
+Les anciens fichiers restent conservés hors de .github/workflows/ dans les deux répertoires d'archive documentés. Les runs historiques ne prouvent pas encore le succès des nouvelles définitions : relever la SHA construite et le statut réel dans le handoff après publication.
 
-3. **rust-nightly.yml — maintenance programmée**
-   - audit des dépendances et licences ;
-   - validation de la documentation ;
-   - benchmark de référence non bloquant initialement ;
-   - signalement des dépendances obsolètes et changements Bevy à examiner ;
-   - rapport du taux de cache, temps de compilation et taille des artefacts.
+La CI PR Rust, les tests d'intégration/headless, l'audit planifié de dépendances et le profilage manuel seront ajoutés quand le workspace Rust et leurs commandes existent. Ne pas ajouter un workflow Rust qui prétend compiler engine/ avant que les manifests Cargo soient présents.
 
-4. **rust-profile.yml — manuel**
-   - lancer un benchmark précis sur un runner connu ;
-   - archiver les mesures JSON et les symboles nécessaires au profiling ;
-   - ne jamais exécuter automatiquement des benchmarks coûteux sur chaque modification documentaire.
-
-5. **release.yml — ultérieur**
-   - droits d'écriture accordés uniquement à l'étape de publication ;
-   - aucun secret ni permission de publication dans les jobs de test/PR.
-
+**Politique de commits et de concurrence CI :** voir docs/operations/commit-and-ci-policy.md. Les lots liés doivent être poussés en une seule mise à jour de référence. Le batching limite les événements ; la concurrence est un filet de sécurité, car un job annulé peut avoir déjà consommé des ressources.
 ### E2. Droits et chaîne d'approvisionnement
 
 - Déclarer les permissions au niveau de chaque workflow/job ; la CI de test devrait n'avoir que contents: read, sans accès à des secrets de publication.
@@ -412,7 +395,7 @@ Ordre conseillé : P-1.1 et P-1.2 en premier ; P-1.3 en parallèle de l'inventai
 P0 peut débuter lorsque :
 
 - [ ] Le commit C de référence et la commande de build sont documentés et reproductibles.
-- [ ] La stratégie CI de remplacement est implémentée et vérifiable ; les workflows historiques et les dernières définitions actives sont sauvegardés hors de `.github/workflows/`, sans réactivation non revue.
+- [ ] La stratégie CI de remplacement est documentée et possède des workflows actifs pour les contrôles d'inventaire et la baseline C/Linux ; les runs requis ont réussi sur les révisions attendues, les archives restent hors de `.github/workflows/` et aucun pipeline n'embarque d'assets non autorisés.
 - [ ] La cartographie générée distingue code, ressources, générateurs, dépendances et sorties de build ; le script d'inventaire a été exécuté et son rapport examiné.
 - [ ] La provenance/licence des dépendances et règles de distribution sont documentées.
 - [ ] Le parcours vertical est choisi et les ressources/IDs nécessaires sont identifiés.

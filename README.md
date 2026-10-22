@@ -28,13 +28,14 @@ Toujours vérifier le HEAD réel de la branche `pc_port` sur GitHub avant de com
 
 ## État de l'automatisation
 
-- Les anciens workflows Linux, Windows et ARM restent archivés à l'identique dans `docs/operations/workflow-archive/2026-10-22/`.
-- Les deux workflows qui étaient actifs au début de cette remise à zéro ont été sauvegardés à l'identique dans `docs/operations/workflow-archive/current-active-2026-10-22/`, puis retirés de `.github/workflows/` dans une seule mise à jour de référence.
-- La branche `backup/pc-port-before-workflow-reset-2026-10-22` conserve l'intégralité du dépôt au HEAD précédant cette modification (`b702c73`). Les copies d'archive distinctes facilitent aussi la revue et la réutilisation éventuelle de ces fichiers.
-- **Aucun workflow GitHub Actions n'est actif sur `pc_port` à ce point de transition.** Les derniers résultats CI restent des preuves historiques limitées aux révisions qu'ils ont construites ; ils ne signifient pas qu'une CI fonctionne actuellement.
-- La compilation C/Linux a précédemment réussi sur le commit `7a07925`, et le script `tools/scripts/repo_inventory.py` a produit deux rapports identiques en CI. La reproductibilité bit à bit du binaire, l'exécution locale et la parité runtime restent à vérifier.
-- La suite est de concevoir et d'ajouter nos workflows spécialisés selon la [politique commits/CI](docs/operations/commit-and-ci-policy.md) et le [plan de workflows/caches](docs/operations/ci-and-caching.md), en gardant les builds lourds séparés des changements documentaires.
-- Le workspace Rust `engine/`, `xtask`, le spike Bevy et la CI Rust restent à créer pendant P-1.
+- Deux workflows de remplacement sont maintenant présents : le contrôle de documentation/inventaire et la compilation C/Linux ciblée.
+- Le workflow docs-inventory vérifie la syntaxe Python et le déterminisme de l'inventaire sans compiler le jeu. Le workflow baseline-c-linux est réservé aux changements de code, ressources et configuration de build pertinents, plus un lancement manuel.
+- Les définitions précédentes restent archivées dans docs/operations/workflow-archive/current-active-2026-10-22/. Les anciens workflows Linux/Windows/ARM sont archivés séparément dans docs/operations/workflow-archive/2026-10-22/.
+- La branche backup/pc-port-before-workflow-reset-2026-10-22 conserve le dépôt avant la remise à zéro.
+- Les nouveaux workflows utilisent des permissions de lecture seulement, des actions épinglées à des SHA complets et une concurrence qui annule les validations obsolètes. Les changements uniquement documentaires ne déclenchent pas le build C/Linux.
+- Les anciens résultats CI restent des preuves limitées aux révisions qui les ont exécutés. Les nouveaux runs déclenchés par cette remise en place doivent être vérifiés avant de considérer la CI confirmée.
+- Le workspace Rust engine/, xtask, le spike Bevy et les workflows de tests Rust restent à créer pendant P-1.
+- Le plan des déclencheurs, des artefacts, permissions et caches est décrit dans docs/operations/ci-and-caching.md.
 
 ## Première étape recommandée
 

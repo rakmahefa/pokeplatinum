@@ -6,14 +6,15 @@
 > **Branche de travail :** `pc_port`  
 > **Règle HEAD :** toujours lire le HEAD actuel sur GitHub avant de reprendre ; une SHA inscrite dans ce document n'est qu'un point de référence historique.
 
-## Dernier lot — 2026-10-22 : sauvegarde et remise à zéro CI
+## Dernier lot — 2026-10-22 : remise en place des premiers workflows
 
-- HEAD avant modification : `b702c73c6a2f172bd6e86363e319ec0507e81222` (`pc_port`).
-- Branche de sauvegarde créée avant les modifications : `backup/pc-port-before-workflow-reset-2026-10-22` ; elle conserve l'arbre complet du HEAD précédent.
-- Les deux workflows présents dans `.github/workflows/` ont été copiés sans modification sous `docs/operations/workflow-archive/current-active-2026-10-22/`, puis supprimés de la branche de travail dans un seul commit.
-- Les archives distinctes des anciens workflows Linux/Windows/ARM restent inchangées.
-- État après ce lot : aucun workflow GitHub Actions actif sur `pc_port`. Aucun build ni test de code n'est prétendu exécuté par le lot d'archivage ; les anciens runs cités plus bas sont des résultats historiques.
-- Prochaine action : concevoir et implémenter les workflows de remplacement selon `docs/operations/ci-and-caching.md`, en conservant une seule mise à jour de référence par lot logique.
+- HEAD antérieur au lot : 4c39ff6c580ea4a8e8ba64de64fee03059dcc1e4 sur pc_port ; la branche de sauvegarde complète backup/pc-port-before-workflow-reset-2026-10-22 est toujours disponible.
+- Deux workflows sont maintenant ajoutés dans .github/workflows/ par une seule mise à jour de référence : docs-inventory.yml et baseline-c-linux.yml.
+- docs-inventory.yml cible les Markdown, docs/**, scripts d'outillage et sa propre définition ; il vérifie la syntaxe Python, compare deux rapports d'inventaire déterministes et conserve seulement un JSON de métadonnées.
+- baseline-c-linux.yml cible les sources C, ressources et fichiers de build pertinents, propose un lancement manuel et conserve un manifeste/checksums sans téléverser les exécutables. Les modifications uniquement documentaires ne déclenchent pas le build C/Linux.
+- Les anciennes définitions sont conservées dans les deux répertoires d'archive. Aucune CI Rust n'est encore ajoutée car engine/ et Cargo.lock n'existent pas.
+- Les runs déclenchés par ce commit doivent être vérifiés sur la SHA réellement exécutée ; ne pas annoncer de réussite avant la conclusion GitHub Actions.
+- README, PREPARATION.md, la politique commits/CI, la conception workflows/caches et le runbook C/Linux ont été actualisés dans le même lot.
 
 ## 1. Contexte et objectif
 
@@ -92,14 +93,14 @@ La chaîne Meson/C/Linux/Windows/ARM existante doit rester utilisable pendant P-
 
 ## 6. Phase en cours : P-1 — Préparation
 
-**Statut : P-1.1 compilation CI validée, reproductibilité bit à bit et parité runtime encore ouvertes ; P-1.2 inventaire amorcé ; P-1.3 matrice provisoire créée ; P-1.4 ADR-0001 formalisée. P0 non commencé.** Le run enrichi a capturé les dépendances ; leurs SHAs sont épinglées dans ce lot et restent à valider par un nouveau build.
+**Statut : P-1.1 compilation CI historique validée, mais le run des workflows réintroduits reste à vérifier ; reproductibilité bit à bit et parité runtime encore ouvertes ; P-1.2 inventaire amorcé ; P-1.3 matrice provisoire créée ; P-1.4 ADR-0001 formalisée. P0 non commencé.** Le run enrichi précédent a capturé les dépendances et leurs SHAs ; le nouveau build doit confirmer qu'elles se résolvent encore.
 
 1. **P-1.1 — Baseline C/PC** : build GitHub réussi, quatre sorties et SHA-256 documentés dans [`docs/operations/c-baseline.md`](docs/operations/c-baseline.md). Exécution locale froide, capture d'une scène repère et validation runtime restent à faire.
 2. **P-1.2 — Inventaire** : script [`tools/scripts/repo_inventory.py`](tools/scripts/repo_inventory.py) exécuté deux fois par CI avec des JSON identiques ; premier artefact résumé dans [`docs/assets/format-inventory.md`](docs/assets/format-inventory.md). Les refs Git mutables et les licences visibles sont consignées dans [`docs/assets/provenance-and-licenses.md`](docs/assets/provenance-and-licenses.md). Il reste à cartographier les producteurs/consommateurs et à verrouiller les dépendances.
 3. **P-1.3 — Parité fonctionnelle** : feature matrix, parcours vertical et fixtures.
 4. **P-1.4 — ADR et spike Bevy** : ADR-0001 acceptée pour la frontière Bevy/domaine ; workspace, écrans, tick/RNG, pipeline d'assets et version exacte de Bevy restent à décider/tester.
 5. **P-1.5 — Toolchain/qualité** : workspace indépendant, version Rust stable fixée, `Cargo.lock`, fmt/clippy/tests.
-6. **P-1.6 — CI de remplacement** : les deux anciens workflows de préparation sont archivés et aucun workflow n'est actif à ce checkpoint. Les résultats historiques attestent des contrôles qui avaient été exécutés sur leurs révisions ; la nouvelle CI docs/inventaire, le déclenchement maîtrisé du build C/Linux et la CI Rust restent à concevoir puis à vérifier.
+6. **P-1.6 — CI de remplacement** : docs-inventory.yml et baseline-c-linux.yml sont ajoutés avec filtres séparés, permissions minimales, actions épinglées et concurrence. Leur réussite n'est confirmée qu'après vérification des nouveaux runs. La CI PR Rust reste à ajouter après création du workspace.
 7. **P-1.7 — `xtask`** : `doctor`, `inventory`, contrôles de génération, vérification de manifests ; sorties déterministes et mode dry-run.
 8. **P-1.8 — Documentation/sécurité** : guides de développement, provenance des assets, licences, workflows et cache.
 9. **P-1.9 — Profilage** : protocole reproductible et baseline initiale, sans seuil arbitraire au début.
@@ -115,8 +116,8 @@ La procédure documentée dans [`docs/operations/commit-and-ci-policy.md`](docs/
 
 ### Workflows de remplacement prévus pendant P-1
 
-- `preparation-checks.yml` : ancienne définition archivée ; ses contrôles Python/inventaire doivent être réimplémentés et ajustés après revue ;
-- `baseline-c-linux.yml` : ancienne définition archivée ; le build C/Linux doit devenir un job spécialisé, avec déclenchement limité aux changements pertinents et un manifeste sans exécutables ;
+- docs-inventory.yml : actif ; syntaxe Python, déterminisme de l'inventaire et JSON métadonnées ; nouveau run à vérifier ;
+- baseline-c-linux.yml : actif ; build C/Linux ciblé aux chemins source/build et lancement manuel ; manifeste sans exécutables ; nouveau run à vérifier ;
 - `.github/workflows/rust-pr.yml` : fmt, lint, tests rapides, validation des fixtures, build Linux minimal ;
 - `.github/workflows/rust-integration.yml` : tests headless et d'intégration, génération et assets avec fixtures approuvées ;
 - `.github/workflows/rust-nightly.yml` : maintenance planifiée, licences/advisories, docs et tendance des benchmarks ;
@@ -132,19 +133,17 @@ Caches proposés :
 
 Documents de préparation proposés dans `docs/architecture/`, `docs/migration/`, `docs/assets/`, `docs/operations/` : ADR, feature matrix, source map, stratégie de parité, inventaire des formats, provenance/licences, setup, CI/cache, profiling et stratégie de tests.
 
-## 8. État courant de la CI — workflows en cours de refonte
+## 8. État courant de la CI — premiers workflows de remplacement
 
-Les trois définitions historiques Linux/Windows/ARM restent archivées sous `docs/operations/workflow-archive/2026-10-22/`. Les deux définitions qui étaient actives juste avant cette remise à zéro sont sauvegardées séparément sous `docs/operations/workflow-archive/current-active-2026-10-22/`. La branche `backup/pc-port-before-workflow-reset-2026-10-22` conserve le dépôt complet au HEAD précédent.
+docs-inventory.yml et baseline-c-linux.yml sont maintenant présents sous .github/workflows/. Le premier ne compile pas le jeu et vérifie la syntaxe Python et l'inventaire ; le second cible les modifications de sources et de build C et produit un manifeste de métadonnées/checksums uniquement.
 
-**État de la branche `pc_port` : aucun workflow actif dans `.github/workflows/`.** Les anciens résultats `preparation-checks` et `baseline-c-linux` restent des preuves historiques des révisions concernées, non une garantie qu'une CI est actuellement déclenchée. Le plan de remplacement et les règles de batching sont dans [`docs/operations/ci-and-caching.md`](docs/operations/ci-and-caching.md) et [`docs/operations/commit-and-ci-policy.md`](docs/operations/commit-and-ci-policy.md).
+Les archives Linux/Windows/ARM restent sous docs/operations/workflow-archive/2026-10-22/. Les deux anciennes définitions de préparation sont conservées sous docs/operations/workflow-archive/current-active-2026-10-22/. La branche backup/pc-port-before-workflow-reset-2026-10-22 préserve l'état complet antérieur à la remise à zéro.
 
-La cible de conception est de séparer les validations documentaires/inventaire, la compilation C de référence et les contrôles Rust. Les filtres de chemins empêcheront les changements documentaires de lancer une compilation complète ; les builds coûteux auront des déclencheurs explicites et une concurrence qui annule les validations devenues obsolètes. Le batching des changements avant la mise à jour de référence reste l'optimisation principale : la concurrence seule ne garantit pas qu'un runner n'a pas déjà commencé.
-
-Ne pas déclarer la nouvelle CI opérationnelle avant d'avoir ajouté ses définitions, vérifié leur syntaxe et observé au moins un run sur la bonne révision.
+Les résultats des nouveaux runs doivent être lus directement dans GitHub Actions et consignés dans le handoff si nécessaire. Les réussites d'anciens runs ne valident pas les nouveaux fichiers. La CI Rust PR, les tests d'intégration/headless, l'audit de dépendances planifié et le profiling manuel restent à créer après le workspace Rust.
 
 ## 9. Prochaines actions recommandées
 
-1. Définir et ajouter les nouveaux workflows spécialisés (docs/inventaire, build C/Linux ciblé, puis CI Rust quand le workspace existe) ; valider leurs chemins déclencheurs, la concurrence, les permissions et la syntaxe avant de considérer la CI rétablie.
+1. Vérifier les runs GitHub Actions déclenchés par le commit qui a ajouté docs-inventory.yml et baseline-c-linux.yml, puis noter leurs conclusions et la SHA construite. Corriger toute erreur dans un lot groupé.
 2. Enquêter sur la différence de hashes de `main`/AppImage entre les runs 39724681527 et 39725655227. Le Dockerfile utilise encore `FROM debian:13` et des versions de paquets non figées ; relever les versions et isoler la cause au lieu de supposer qu'une variable temporelle suffit.
 3. Exécuter un build local froid, puis lancer l'application et documenter une scène repère.
 4. Compléter P-1.2 avec la cartographie des producteurs/consommateurs, formats et provenance/licences ; épingler Tracy lors d'un build qui l'utilise réellement.
@@ -165,6 +164,6 @@ Ne pas déclarer la baseline globale validée tant que le runtime, la scène rep
 - workflows actifs au moment de la passation, statut connu des runs pertinents et éventuel changement de CI ;
 - risques/obstacles et prochaine action concrète.
 
-À chaque nouvelle session, lire d'abord le HEAD actuel de `pc_port`, puis ce fichier et les documents de référence utiles. Ne jamais déduire l'état actuel d'une ancienne SHA ou d'une ancienne note. Vérifier l'arborescence `.github/workflows/` avant toute action CI : à ce checkpoint, aucun workflow n'est actif. Les archives historiques sont conservées sous deux chemins distincts ; la prochaine étape est de créer les remplaçants documentés, et non de réactiver les archives sans revue.
+À chaque nouvelle session, lire d'abord le HEAD actuel de pc_port, puis ce fichier et les documents de référence utiles. Ne jamais déduire l'état actuel d'une ancienne SHA ou d'une ancienne note. Vérifier .github/workflows/ : docs-inventory.yml et baseline-c-linux.yml sont les workflows actifs au checkpoint courant ; la CI Rust reste à créer. Les archives restent conservées hors du répertoire de workflows.
 
 Garder ce fichier opérationnel par rapport à `audit.md` (plan global) et `PREPARATION.md` (détails de P-1). Il sert de point d'entrée fiable pour une nouvelle session, pas de duplication des spécifications complètes.

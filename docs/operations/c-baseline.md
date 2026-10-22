@@ -1,6 +1,6 @@
 # Baseline C/Linux — procédure et première preuve
 
-> **État au 2026-10-22 :** le workflow dédié a effectué un build C/Linux réussi sur un runner GitHub Actions Ubuntu 24.04. L'exécution locale froide et le lancement visuel du runtime restent à effectuer ; la baseline de compilation est établie, la baseline fonctionnelle ne l'est pas encore.
+> **État au 2026-10-22 :** un ancien workflow C/Linux a réussi sur Ubuntu 24.04 à la révision indiquée ci-dessous. Une nouvelle définition baseline-c-linux.yml vient d'être ajoutée avec des filtres ciblés ; son run sur le commit qui l'introduit doit être vérifié séparément. L'exécution locale froide et le lancement visuel du runtime restent à effectuer ; la baseline fonctionnelle n'est pas encore établie.
 
 ## 1. Révision effectivement compilée
 

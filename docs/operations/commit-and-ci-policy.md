@@ -11,8 +11,8 @@ Pour une série de changements liés, l'objectif est de publier **une seule mise
 - **Développement local :** faire autant de commits cohérents que nécessaire sur une branche de travail, puis pousser la série en une seule fois.
 - **Modifications par API GitHub / agent :** préparer tous les blobs et arbres, créer un ou plusieurs commits liés, puis déplacer la référence de branche une seule fois. Ne pas utiliser `create_file` ou `update_file` successivement sur la branche surveillée pour chaque fichier d'un même lot.
 - **Sécurité CI :** les anciens workflows Linux/Windows/ARM sont archivés sous `docs/operations/workflow-archive/2026-10-22/`. Les deux workflows qui étaient actifs avant la remise à zéro sont archivés séparément sous `docs/operations/workflow-archive/current-active-2026-10-22/` et retirés de `.github/workflows/`.
-- **Transition :** aucun workflow GitHub Actions n'est actif sur `pc_port` au checkpoint de cette politique. La sauvegarde complète est la branche `backup/pc-port-before-workflow-reset-2026-10-22` ; les anciens runs sont des résultats historiques.
-- **Remplacement en préparation :** la nouvelle architecture doit séparer le contrôle docs/inventaire, le build C/Linux ciblé, la validation PR Rust, les tests d'intégration et le profilage manuel ; détails dans `docs/operations/ci-and-caching.md`.
+- **Transition :** deux workflows de remplacement sont ajoutés dans .github/workflows/ dans ce lot : docs-inventory.yml et baseline-c-linux.yml. Leurs nouveaux runs doivent être confirmés après publication.
+- **Étape suivante :** ajouter la validation PR Rust et les tests headless seulement quand engine/ et Cargo.lock existent ; les pipelines d'intégration, maintenance et profilage restent distincts. Voir docs/operations/ci-and-caching.md.
 - **Documents :** les nouveaux contrôles devront vérifier les Markdown et les liens sans lancer inutilement les compilations du jeu.
 - **Publication :** ne pas mélanger les tâches de publication avec les tâches de test et de compilation.
 
@@ -92,25 +92,20 @@ Règles :
 - Utiliser des branches de travail et des PR pour les lots de code importants. Ne pas effectuer de force-push sur la branche cible.
 - Faire une seule mise à jour de référence par lot, sans sacrifier la lisibilité de l'historique.
 
-## 5. État de transition et cible des workflows
+## 5. État courant des workflows
 
-Les définitions historiques `build_linux.yml`, `build_win.yml` et `build_arm.yml` sont archivées dans `docs/operations/workflow-archive/2026-10-22/`. Elles restent des références historiques ; elles ne doivent pas être activées telles quelles.
+Deux workflows de remplacement sont maintenant présents sous .github/workflows/ :
 
-Les deux workflows qui étaient actifs juste avant la remise à zéro (`baseline-c-linux.yml` et `preparation-checks.yml`) ont été copiés à l'identique dans `docs/operations/workflow-archive/current-active-2026-10-22/`, puis retirés de `.github/workflows/` dans un seul commit. La branche `backup/pc-port-before-workflow-reset-2026-10-22` conserve également le dépôt complet au HEAD précédent.
+- **docs-inventory.yml** : les changements Markdown, documentation, scripts d'outillage et son propre fichier YAML déclenchent un contrôle de syntaxe Python, deux générations identiques de l'inventaire et une validation de schéma. Le rapport JSON ne contient que des métadonnées et sa rétention est de 14 jours.
+- **baseline-c-linux.yml** : les changements de code C, ressources, générateurs et configuration de build pertinents déclenchent la compilation Linux ; un lancement manuel est aussi possible. Le résumé et l'artefact contiennent les révisions, dépendances, tailles et SHA-256, pas les exécutables.
 
-**État de transition : aucun workflow GitHub Actions n'est actif sur `pc_port`.** Les anciens runs qui ont réussi (ou étaient encore en cours au dernier relevé) ne prouvent que l'état de la révision qui les a déclenchés. En particulier, le succès historique du build C/Linux sur `7a07925` reste documenté dans `docs/operations/c-baseline.md`, mais il n'existe plus de déclenchement automatique tant que les workflows de remplacement ne sont pas ajoutés.
+Les deux workflows déclarent permissions contents: read, épinglent les actions externes à des SHA complets, ont des filtres de chemins distincts et une concurrence qui annule les validations obsolètes pour la même branche/PR. Les changements uniquement documentaires ne déclenchent donc pas le build C/Linux. Les modifications de la définition du build le déclenchent volontairement pour le vérifier sur une compilation réelle.
 
-La cible de remplacement, à mettre en œuvre et valider par étapes, est la suivante :
-- **Documentation et inventaire :** contrôles légers sans compilation du jeu ; exécution sur les changements Markdown, docs et scripts associés.
-- **C/Linux de référence :** compilation seulement sur changements source/build C pertinents ou par lancement manuel ; manifeste de métadonnées/checksums uniquement, sans exécutables.
-- **Rust PR :** fmt, lint, tests rapides, fixtures synthétiques et build minimal dès que `engine/` existe.
-- **Intégration/nightly/profilage :** séparation des tests headless, audits de dépendances et benchmarks ; les tâches coûteuses ne doivent pas être lancées par les seuls changements documentaires.
-- **Permissions et concurrence :** permissions minimales, actions épinglées, groupe de concurrence par workflow et branche/PR pour annuler les validations obsolètes ; ne pas annuler un éventuel job de publication.
+Les conclusions des nouveaux runs restent à confirmer sur le commit qui introduit ces fichiers. Le succès d'un ancien build sur 7a07925 et les anciens contrôles d'inventaire sont des preuves historiques, pas les résultats des nouveaux workflows.
 
-Le workflow de préparation précédent comparait deux rapports d'inventaire et conservait un JSON de métadonnées pendant 14 jours, sans téléverser le contenu des blobs. L'ancien workflow C/Linux enregistrait l'environnement, les dépendances détectées et les checksums, sans téléverser les exécutables. Ces comportements sont des exigences à réévaluer pour le remplacement, pas des contrôles actifs.
+Les définitions historiques Linux/Windows/ARM restent dans docs/operations/workflow-archive/2026-10-22/. Les anciennes versions des deux workflows de préparation sont conservées séparément dans docs/operations/workflow-archive/current-active-2026-10-22/. La branche backup/pc-port-before-workflow-reset-2026-10-22 conserve l'état complet antérieur.
 
-Les détails de déclenchement, la stratégie de cache et la procédure de publication d'un lot sont décrits dans [`docs/operations/ci-and-caching.md`](ci-and-caching.md) et dans la section de batching ci-dessus.
-
+La CI Rust PR, les tests d'intégration/headless, les contrôles de dépendances planifiés et le profilage manuel restent à ajouter quand les cibles et commandes correspondantes existent. Les archives ne doivent pas être réactivées telles quelles.
 ## 6. Politique de regroupement et moment où exécuter la CI
 
 | Type de changement | Quand vérifier | Doit compiler le jeu ? |

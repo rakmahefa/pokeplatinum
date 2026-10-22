@@ -1,6 +1,6 @@
 # Architecture de CI et de cache — préparation P-1
 
-> **État au 2026-10-22 :** conception en cours. Aucun workflow n'est actuellement actif dans `.github/workflows/`. Ce document décrit la cible ; il ne prétend pas que les jobs ont déjà été implémentés ou exécutés.
+> **État au 2026-10-22 :** les workflows docs-inventory.yml et baseline-c-linux.yml viennent d'être ajoutés. Leurs exécutions sur le nouveau commit restent à vérifier ; les autres pipelines ci-dessous sont encore des cibles de conception.
 
 ## 1. Objectifs
 
@@ -31,7 +31,7 @@ Effectuer les commits séparés et lisibles nécessaires, exécuter les contrôl
 
 | Pipeline proposé | Déclenchement souhaité | Travaux | Compiler le jeu ? |
 |---|---|---|---|
-| `docs-inventory.yml` | Markdown, `docs/**`, script d'inventaire et config du workflow ; PR/push ciblés | Liens documentaires, structure Markdown, syntaxe du script, rapport d'inventaire déterministe | Non |
+| `docs-inventory.yml` | Markdown, `docs/**`, `tools/scripts/**` et son YAML ; PR/push ciblés | Syntaxe Python, génération en double, comparaison octet par octet et validation du schéma de l'inventaire | Non |
 | `baseline-c-linux.yml` | Changements C/build strictement pertinents sur `pc_port`, plus `workflow_dispatch` | Build Linux de référence, capture des dépendances, manifeste SHA-256 uniquement | Oui, uniquement quand le périmètre C/build l'exige |
 | `rust-pr.yml` | Changements sous `engine/**`, fichiers Rust/Cargo/toolchain, config de CI ; PR/push pertinents | `cargo fmt --check`, lint, tests rapides, fixtures synthétiques et build minimal | Oui, après création du workspace |
 | `rust-integration.yml` | PR importante, merge queue si activée, ou déclenchement manuel | Tests headless, parsers/assets, génération déterministe, intégration | Oui |
@@ -39,7 +39,7 @@ Effectuer les commits séparés et lisibles nécessaires, exécuter les contrôl
 | `rust-profile.yml` | Manuel sur runner/matériel identifié | Profilage et résultats JSON comparables | Oui, benchmark dédié |
 | `release.yml` | À concevoir plus tard, déclenchement versionné et explicite | Packaging autorisé et signatures si prévues | Oui ; jamais partagé avec les jobs de test privilégiés |
 
-Les noms sont des cibles de conception ; aucun de ces fichiers n'existe ni n'est actif au checkpoint où ce document est écrit. Ne créer un pipeline qu'après avoir défini précisément ses chemins surveillés et une commande vérifiable.
+docs-inventory.yml et baseline-c-linux.yml sont présents dans .github/workflows/ ; leurs déclencheurs et commandes sont définis. Les autres noms du tableau sont des cibles de conception, pas des workflows implémentés. La mise en service des deux premiers ne sera confirmée qu'après vérification de leurs runs sur le commit qui les introduit.
 
 ## 4. Déclencheurs, filtres et concurrence
 
@@ -86,4 +86,4 @@ Un workflow n'est réputé opérationnel qu'après :
 
 ## 8. Décision de transition
 
-Garder `.github/workflows/` sans workflow actif jusqu'à ce que le jeu de workflows de remplacement soit revu et ajouté en un lot cohérent. La branche de sauvegarde et les archives offrent un retour arrière ; les anciennes définitions sont une source à étudier, pas des modèles à réactiver sans changements.
+Les deux premiers workflows de remplacement (docs-inventory.yml et baseline-c-linux.yml) ont été ajoutés en un seul lot avec leurs mises à jour documentaires. Vérifier leurs résultats sur le commit publié avant d'annoncer la CI rétablie. La branche de sauvegarde et les archives fournissent un retour arrière ; la prochaine étape est d'ajouter la CI Rust après création du workspace.
