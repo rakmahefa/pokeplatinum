@@ -1,6 +1,6 @@
 # Phase Préparation — sécuriser le chantier Rust + Bevy
 
-> Statut : phase en cours — compilation C/Linux initiale réussie, validations runtime et verrouillage des dépendances encore ouverts ; préalable obligatoire à P0  
+> Statut : phase en cours — compilation C/Linux historique réussie ; validation runtime et verrouillage des dépendances ouverts ; workflows actuels archivés, CI de remplacement à concevoir et valider avant P0  
 > Dépôt : rakmahefa/pokeplatinum — branche de travail : pc_port  
 > Date de rédaction : 2026-10-22  
 > Référence de stratégie : audit.md
@@ -204,7 +204,7 @@ Ne jamais introduire une commande d'extraction ou de téléversement qui envoie 
 
 ### E1. Séparer les workflows
 
-Ne pas remplacer les workflows existants ARM/Linux/Windows qui construisent le port courant. Ajouter des workflows Rust dédiés, puis améliorer la politique actuelle par des changements indépendants.
+Les anciens workflows ARM/Linux/Windows sont archivés sous `docs/operations/workflow-archive/2026-10-22/`. Les workflows de préparation précédemment actifs sont également sauvegardés sous `docs/operations/workflow-archive/current-active-2026-10-22/`, et aucun workflow n'est actif à ce checkpoint. Il faut concevoir un nouvel ensemble cohérent plutôt que réactiver les définitions archivées : contrôles documentaires/inventaire légers, build C/Linux avec chemins limités ou lancement manuel, puis contrôles Rust quand le workspace existe. Le design opérationnel est détaillé dans [`docs/operations/ci-and-caching.md`](../operations/ci-and-caching.md).
 
 **Politique de commits et de concurrence CI :** voir [docs/operations/commit-and-ci-policy.md](../operations/commit-and-ci-policy.md). Les lots liés doivent être poussés en une seule mise à jour de référence (même si l'historique contient plusieurs commits). Les workflows lourds annulent les exécutions obsolètes pour la même branche/PR. Le batching limite les événements CI ; la concurrence n'est qu'un filet de sécurité, car un job annulé peut avoir déjà utilisé des ressources.
 
@@ -412,7 +412,7 @@ Ordre conseillé : P-1.1 et P-1.2 en premier ; P-1.3 en parallèle de l'inventai
 P0 peut débuter lorsque :
 
 - [ ] Le commit C de référence et la commande de build sont documentés et reproductibles.
-- [ ] La stratégie CI de remplacement est documentée et vérifiable ; les workflows historiques sont archivés hors de `.github/workflows/` et ne sont pas réactivés tels quels.
+- [ ] La stratégie CI de remplacement est implémentée et vérifiable ; les workflows historiques et les dernières définitions actives sont sauvegardés hors de `.github/workflows/`, sans réactivation non revue.
 - [ ] La cartographie générée distingue code, ressources, générateurs, dépendances et sorties de build ; le script d'inventaire a été exécuté et son rapport examiné.
 - [ ] La provenance/licence des dépendances et règles de distribution sont documentées.
 - [ ] Le parcours vertical est choisi et les ressources/IDs nécessaires sont identifiés.
