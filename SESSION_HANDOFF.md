@@ -6,15 +6,14 @@
 > **Branche de travail :** `pc_port`  
 > **Règle HEAD :** toujours lire le HEAD actuel sur GitHub avant de reprendre ; une SHA inscrite dans ce document n'est qu'un point de référence historique.
 
-## Dernier lot — 2026-10-22 : remise en place des premiers workflows
+## Dernier lot — 2026-10-22 : workflows ciblés et correctif de la garde Meson
 
-- HEAD antérieur au lot : 4c39ff6c580ea4a8e8ba64de64fee03059dcc1e4 sur pc_port ; la branche de sauvegarde complète backup/pc-port-before-workflow-reset-2026-10-22 est toujours disponible.
-- Deux workflows sont maintenant ajoutés dans .github/workflows/ par une seule mise à jour de référence : docs-inventory.yml et baseline-c-linux.yml.
-- docs-inventory.yml cible les Markdown, docs/**, scripts d'outillage et sa propre définition ; il vérifie la syntaxe Python, compare deux rapports d'inventaire déterministes et conserve seulement un JSON de métadonnées.
-- baseline-c-linux.yml cible les sources C, ressources et fichiers de build pertinents, propose un lancement manuel et conserve un manifeste/checksums sans téléverser les exécutables. Les modifications uniquement documentaires ne déclenchent pas le build C/Linux.
-- Les anciennes définitions sont conservées dans les deux répertoires d'archive. Aucune CI Rust n'est encore ajoutée car engine/ et Cargo.lock n'existent pas.
-- Les runs déclenchés par ce commit doivent être vérifiés sur la SHA réellement exécutée ; ne pas annoncer de réussite avant la conclusion GitHub Actions.
-- README, PREPARATION.md, la politique commits/CI, la conception workflows/caches et le runbook C/Linux ont été actualisés dans le même lot.
+- HEAD avant ce lot : 3d9b0b8275cf1b1b34b353b45cd69b8a23c5d916.
+- docs-inventory.yml a réussi sur cette révision dans le run 39735904476 ; le contrôle de syntaxe Python et les deux inventaires ont réussi.
+- Le build C/Linux 39735904644 a été déclenché sur cette révision. L'inspection du run précédent 39727347222 a montré que la recette Makefile utilisait $(...) comme référence de variable Make, au lieu d'échapper le dollar pour demander une substitution de commande au shell. Cela provoquait un faux échec lors de la vérification de la SHA Meson.
+- Le lot courant corrige la recette pour que le shell exécute git -C subprojects/meson-1.12.0 rev-parse HEAD, puis met à jour cette passation et la checklist. Le build C/Linux doit être revalidé sur la nouvelle SHA.
+- Les workflows actifs restent docs-inventory.yml et baseline-c-linux.yml. La baseline ne publie que des métadonnées/checksums, jamais les exécutables.
+- Le workspace Rust engine/ n'existe pas encore ; ne pas ajouter de workflow qui prétend compiler le runtime Rust avant ses manifests.
 
 ## 1. Contexte et objectif
 
@@ -52,7 +51,7 @@ Résultats CI confirmés :
 - Les SHAs de libntr, libntrdwc, libntrsystem, libntrwifi, libvct et metang observées dans le manifeste sont épinglées dans les wrappers et `update.ini`. Le Makefile vérifie le commit exact de Meson 1.12.0 ; le build suivant doit valider ces épingles.
 - Les anciens workflows C Linux/ARM/Windows ont terminé avec `success` sur le commit historique `ef958c9`. Les originaux sont archivés à l'identique dans `docs/operations/workflow-archive/2026-10-22/`.
 
-Les anciens workflows de préparation étaient `.github/workflows/preparation-checks.yml` et `.github/workflows/baseline-c-linux.yml` ; leurs copies exactes se trouvent désormais dans `docs/operations/workflow-archive/current-active-2026-10-22/`. Aucun workflow n'est actuellement actif sur `pc_port`.
+Les anciens workflows de préparation restent archivés sous `docs/operations/workflow-archive/current-active-2026-10-22/`. Les remplaçants actifs sont `.github/workflows/docs-inventory.yml` et `.github/workflows/baseline-c-linux.yml`. Le run docs/inventaire 39735904476 a réussi sur 3d9b0b8 ; le build C/Linux initial de cette révision a révélé le problème de syntaxe Make corrigé dans le lot suivant.
 
 ## 4. Documents à lire en premier
 
@@ -89,7 +88,7 @@ Systèmes source à traiter attentivement :
 - `src/sound_system.c` : audio basé sur SDAT/Nitro ;
 - `meson.build`, `meson.options`, Makefile et `.github/workflows/` : chaîne de build existante.
 
-La chaîne Meson/C/Linux/Windows/ARM existante doit rester utilisable pendant P-1. À la suite de la remise à zéro du 2026-10-22, aucun workflow n'est actif dans `.github/workflows/`. Les définitions précédentes sont archivées ; les workflows de remplacement doivent être écrits à partir de la politique actuelle, après vérification de leurs déclencheurs, chemins, permissions, concurrence et artefacts.
+La chaîne Meson/C/Linux/Windows/ARM existante doit rester utilisable pendant P-1. Les workflows de remplacement docs/inventory et C/Linux sont maintenant sous `.github/workflows/`. Les validations sont ciblées par chemins ; le build de confirmation a exposé une erreur dans le test de SHA de Meson du Makefile, corrigée dans le commit courant à confirmer par un nouveau run.
 
 ## 6. Phase en cours : P-1 — Préparation
 
@@ -100,7 +99,7 @@ La chaîne Meson/C/Linux/Windows/ARM existante doit rester utilisable pendant P-
 3. **P-1.3 — Parité fonctionnelle** : feature matrix, parcours vertical et fixtures.
 4. **P-1.4 — ADR et spike Bevy** : ADR-0001 acceptée pour la frontière Bevy/domaine ; workspace, écrans, tick/RNG, pipeline d'assets et version exacte de Bevy restent à décider/tester.
 5. **P-1.5 — Toolchain/qualité** : workspace indépendant, version Rust stable fixée, `Cargo.lock`, fmt/clippy/tests.
-6. **P-1.6 — CI de remplacement** : docs-inventory.yml et baseline-c-linux.yml sont ajoutés avec filtres séparés, permissions minimales, actions épinglées et concurrence. Leur réussite n'est confirmée qu'après vérification des nouveaux runs. La CI PR Rust reste à ajouter après création du workspace.
+6. **P-1.6 — CI de remplacement** : docs-inventory.yml a réussi sur le commit précédent. baseline-c-linux.yml est actif et ciblé ; le build de confirmation a identifié un défaut de quoting dans la garde SHA de Meson au Makefile, corrigé dans le lot courant. Le succès du nouveau build reste à vérifier ; la CI PR Rust attend le workspace.
 7. **P-1.7 — `xtask`** : `doctor`, `inventory`, contrôles de génération, vérification de manifests ; sorties déterministes et mode dry-run.
 8. **P-1.8 — Documentation/sécurité** : guides de développement, provenance des assets, licences, workflows et cache.
 9. **P-1.9 — Profilage** : protocole reproductible et baseline initiale, sans seuil arbitraire au début.
@@ -110,14 +109,14 @@ L'ordre détaillé et les critères restent dans `docs/architecture/PREPARATION.
 
 ## 7.1. Politique de commits et de ref
 
-La procédure documentée dans [`docs/operations/commit-and-ci-policy.md`](docs/operations/commit-and-ci-policy.md) reste en vigueur : faire les commits logiques en chaîne, créer les blobs/arbres/commits, puis déplacer `pc_port` une seule fois avec un contrôle `expected_sha` et sans force-push. Aucun workflow n'est actif au checkpoint courant ; les archives ne sont pas exécutables depuis `docs/`. À chaque lot, mettre à jour ce handoff dans la même chaîne de commits puis publier en une seule mise à jour de référence.
+La procédure documentée dans [`docs/operations/commit-and-ci-policy.md`](docs/operations/commit-and-ci-policy.md) reste en vigueur : créer les blobs/arbres/commits, puis déplacer `pc_port` une seule fois avec un contrôle `expected_sha` et sans force-push. Les workflows actifs sont docs-inventory et baseline-c-linux ; la validation complète reste suspendue au nouveau run après le correctif Makefile. À chaque lot, mettre à jour ce handoff dans la même chaîne de commits puis publier en une seule mise à jour de référence.
 
 ## 7. Automatisation et documentation envisagées
 
 ### Workflows de remplacement prévus pendant P-1
 
-- docs-inventory.yml : actif ; syntaxe Python, déterminisme de l'inventaire et JSON métadonnées ; nouveau run à vérifier ;
-- baseline-c-linux.yml : actif ; build C/Linux ciblé aux chemins source/build et lancement manuel ; manifeste sans exécutables ; nouveau run à vérifier ;
+- docs-inventory.yml : actif ; run 39735904476 réussi sur le commit 3d9b0b8 (syntaxe Python et inventaire déterministe) ; un run sera également déclenché par la correction documentaire suivante ;
+- baseline-c-linux.yml : actif ; build C/Linux ciblé aux chemins source/build et lancement manuel ; manifeste sans exécutables ; correction de la garde SHA de Meson appliquée, succès à confirmer sur la nouvelle révision ;
 - `.github/workflows/rust-pr.yml` : fmt, lint, tests rapides, validation des fixtures, build Linux minimal ;
 - `.github/workflows/rust-integration.yml` : tests headless et d'intégration, génération et assets avec fixtures approuvées ;
 - `.github/workflows/rust-nightly.yml` : maintenance planifiée, licences/advisories, docs et tendance des benchmarks ;
@@ -139,11 +138,11 @@ docs-inventory.yml et baseline-c-linux.yml sont maintenant présents sous .githu
 
 Les archives Linux/Windows/ARM restent sous docs/operations/workflow-archive/2026-10-22/. Les deux anciennes définitions de préparation sont conservées sous docs/operations/workflow-archive/current-active-2026-10-22/. La branche backup/pc-port-before-workflow-reset-2026-10-22 préserve l'état complet antérieur à la remise à zéro.
 
-Les résultats des nouveaux runs doivent être lus directement dans GitHub Actions et consignés dans le handoff si nécessaire. Les réussites d'anciens runs ne valident pas les nouveaux fichiers. La CI Rust PR, les tests d'intégration/headless, l'audit de dépendances planifié et le profiling manuel restent à créer après le workspace Rust.
+Le run docs-inventory 39735904476 a réussi sur le premier commit de remise en place. Le run C/Linux de cette révision doit être considéré comme non validé tant que la nouvelle compilation n'a pas confirmé le correctif Makefile. Les succès d'anciens runs ne valident pas les nouveaux fichiers. La CI Rust PR, les tests d'intégration/headless, l'audit de dépendances planifié et le profiling manuel restent à créer après le workspace Rust.
 
 ## 9. Prochaines actions recommandées
 
-1. Vérifier les runs GitHub Actions déclenchés par le commit qui a ajouté docs-inventory.yml et baseline-c-linux.yml, puis noter leurs conclusions et la SHA construite. Corriger toute erreur dans un lot groupé.
+1. Vérifier les runs GitHub Actions déclenchés par la correction de la garde SHA de Meson et la mise à jour du handoff ; noter les conclusions et la SHA construite. Corriger toute autre erreur dans un lot groupé.
 2. Enquêter sur la différence de hashes de `main`/AppImage entre les runs 39724681527 et 39725655227. Le Dockerfile utilise encore `FROM debian:13` et des versions de paquets non figées ; relever les versions et isoler la cause au lieu de supposer qu'une variable temporelle suffit.
 3. Exécuter un build local froid, puis lancer l'application et documenter une scène repère.
 4. Compléter P-1.2 avec la cartographie des producteurs/consommateurs, formats et provenance/licences ; épingler Tracy lors d'un build qui l'utilise réellement.

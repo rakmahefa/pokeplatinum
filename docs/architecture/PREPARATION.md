@@ -204,7 +204,7 @@ Ne jamais introduire une commande d'extraction ou de téléversement qui envoie 
 
 ### E1. Séparer les workflows
 
-Deux workflows de remplacement viennent d'être ajoutés dans .github/workflows/ :
+Deux workflows de remplacement sont actifs dans .github/workflows/ :
 
 1. **docs-inventory.yml — validation rapide**
    - se déclenche pour les Markdown, docs/**, tools/scripts/** et sa propre définition ;
@@ -219,7 +219,7 @@ Deux workflows de remplacement viennent d'être ajoutés dans .github/workflows/
 
 Les deux workflows déclarent contents: read, épinglent les actions externes à des SHA complets, et annulent les validations obsolètes pour une même branche/PR. Des changements uniquement documentaires ne démarrent pas la baseline C/Linux. La modification d'une définition de workflow déclenche le pipeline correspondant pour détecter une configuration cassée.
 
-Les anciens fichiers restent conservés hors de .github/workflows/ dans les deux répertoires d'archive documentés. Les runs historiques ne prouvent pas encore le succès des nouvelles définitions : relever la SHA construite et le statut réel dans le handoff après publication.
+Les anciens fichiers restent conservés hors de .github/workflows/ dans les deux répertoires d'archive documentés. Le nouveau run docs-inventory 39735904476 a réussi. Le run C/Linux précédent a révélé le défaut de quoting du Makefile ; le correctif est dans ce lot et son résultat doit être consigné après le nouveau build.
 
 La CI PR Rust, les tests d'intégration/headless, l'audit planifié de dépendances et le profilage manuel seront ajoutés quand le workspace Rust et leurs commandes existent. Ne pas ajouter un workflow Rust qui prétend compiler engine/ avant que les manifests Cargo soient présents.
 
