@@ -64,6 +64,8 @@ Un outil d'inventaire, non un audit manuel ponctuel, devra générer des rapport
 
 Le rapport doit distinguer le code du jeu, les outils, les ressources brutes, les données générées et les dépendances vendoriées ou téléchargées. Il ne doit pas considérer automatiquement chaque fichier du dépôt comme une ressource à convertir.
 
+Un premier snapshot de volumes/extensions, issu du rapport automatisé, est conservé dans [`docs/assets/format-inventory.md`](../assets/format-inventory.md). Les familles d'extension qui n'ont pas encore été confirmées par un parseur ou un consommateur explicite y sont marquées comme hypothèses, pas comme spécifications validées.
+
 ### A3. Inventaire de provenance et licences
 
 - Dresser la liste des licences et notices propres au code, aux sous-projets, outils et dépendances.

@@ -29,7 +29,7 @@ Toujours vérifier le HEAD réel de la branche `pc_port` sur GitHub avant de com
 - Les anciens workflows Linux, Windows et ARM ont été copiés à l'identique dans `docs/operations/workflow-archive/2026-10-22/`, puis retirés de `.github/workflows/` pour commencer la refonte P-1. Ils ne doivent pas être réactivés sans revue.
 - Les anciens workflows Linux, Windows et ARM sont archivés et ne sont pas actifs. Deux workflows de remplacement sont prévus pour cette phase : `preparation-checks.yml` vérifie la syntaxe et le déterminisme de l'inventaire ; `baseline-c-linux.yml` construit la référence C/Linux sans publier les exécutables, et conserve uniquement un manifeste SHA-256 de sorties.
 - Le runbook initial de baseline C/Linux se trouve dans `docs/operations/c-baseline.md`. L'exécution locale froide et les preuves d'artefacts restent à enregistrer.
-- `tools/scripts/repo_inventory.py` inventorie l'arbre Git versionné de façon déterministe. Le workflow `preparation-checks.yml` compare deux rapports identiques et téléverse le JSON de métadonnées (chemins, tailles, SHA des blobs, sans contenu de fichier) comme artefact conservé 14 jours.
+- `tools/scripts/repo_inventory.py` inventorie l'arbre Git versionné de façon déterministe. Le workflow `preparation-checks.yml` compare deux rapports identiques et téléverse le JSON de métadonnées (chemins, tailles, SHA des blobs, sans contenu de fichier) comme artefact conservé 14 jours. Le premier snapshot synthétique est décrit dans [l'inventaire des formats](docs/assets/format-inventory.md).
 - Les lots liés doivent toujours être publiés en une seule mise à jour de référence ; voir la politique commits/CI.
 - Le workspace Rust `engine/`, `xtask` et les nouveaux workflows restent à créer pendant P-1.
 

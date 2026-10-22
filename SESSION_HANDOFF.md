@@ -27,21 +27,23 @@ L'utilisateur a confirmé qu'il s'agit de son fork et a demandé de supprimer le
 
 ## 3. État Git connu
 
-HEAD confirmé avant ce lot : `b58233c4d47f56b75d863200e557bf989948d3e6`. Après chaque publication, relire le HEAD réel sur GitHub ; une SHA inscrite ici ne remplace pas cette vérification.
+HEAD inspecté avant le présent lot : `445533d142aee68f87fdf0852b9f14ec00f7ca66`. Après chaque publication, relire le HEAD réel de `pc_port` sur GitHub ; cette SHA est un repère historique.
 
-Commits du lot précédent :
-- `4e42a86afe9dcd4aff2c0cdba4a0f596a427a955` — archive exacte des workflows historiques ;
-- `a0ab305b6fc52a0e5e2b95fd64abd31a4b388a0e` — retrait des trois fichiers actifs ;
-- `e71df0f741f7bc18f0567f102ed46de86c020cd7` — runbook initial et inventaire Git ;
-- `b58233c4d47f56b75d863200e557bf989948d3e6` — premier workflow de préparation.
+Commits vérifiés de ce chantier :
+- `4e42a86afe9dcd4aff2c0cdba4a0f596a427a955` — archive exacte des trois workflows historiques ;
+- `a0ab305b6fc52a0e5e2b95fd64abd31a4b388a0e` — retrait des fichiers actifs ;
+- `e71df0f741f7bc18f0567f102ed46de86c020cd7` — runbook initial et outil d'inventaire ;
+- `b58233c4d47f56b75d863200e557bf989948d3e6` — workflow de contrôle docs/inventaire ;
+- `7a07925f620e327e2126d2af931785ed35a563a8` — workflow de build C/Linux ;
+- `445533d142aee68f87fdf0852b9f14ec00f7ca66` — conservation de l'artefact d'inventaire.
 
-État de la CI observé :
-- Le workflow [`preparation-checks`](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724440638) a terminé avec `success` sur `b58233c`.
-- Il a validé la syntaxe de `tools/scripts/repo_inventory.py`, généré deux JSON puis comparé leur contenu : les rapports sont identiques.
-- Résumé généré pour cet HEAD : 27 711 blobs Git, 138 519 605 octets de contenu de blob, aucun gitlink ni lien symbolique dans le rapport.
-- Les runs historiques Linux (`39722714025`) et ARM (`39722714020`) ont terminé avec `success` sur `ef958c9`. Le run Windows `39722714273` était encore indiqué `in_progress` lors du dernier relevé ; il n'est pas considéré comme confirmé.
+Résultats vérifiés :
+- [Workflow preparation-checks run 39724440638](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724440638) : `success`. Syntaxe du script validée ; deux JSON identiques ; résumé de l'arbre : 27 711 blobs et 138 519 605 octets au commit `b58233c`.
+- [Workflow preparation-checks run 39724791913](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724791913) : `success`. Artefact `repository-inventory-445533d142aee68f87fdf0852b9f14ec00f7ca66`, rapport JSON de métadonnées retenu 14 jours. Son snapshot comprend 27 712 blobs et 138 524 927 octets au commit `445533d`.
+- Le snapshot est résumé dans [`docs/assets/format-inventory.md`](docs/assets/format-inventory.md) : volumes par répertoire, extensions dominantes et plus gros blobs, avec les formats non confirmés marqués comme hypothèses.
+- Le nouveau build [baseline-c-linux run 39724681527](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724681527) a été lancé sur le commit `7a07925`. Au dernier contrôle, `make skrew` était terminé et `make linux` était en cours ; aucun résultat final ni manifeste de checksum n'est encore confirmé.
 
-Les workflows historiques sont sauvegardés dans `docs/operations/workflow-archive/2026-10-22/`. Les nouveaux workflows de préparation sont conçus séparément.
+Les workflows historiques Linux/ARM (`39722714025`, `39722714020`) ont réussi au commit `ef958c9`. Le workflow Windows historique (`39722714273`) était encore indiqué `in_progress` au dernier relevé et demeure non confirmé. Les copies des trois fichiers sont sous `docs/operations/workflow-archive/2026-10-22/`.
 
 ## 4. Documents à lire en premier
 
@@ -86,7 +88,7 @@ La chaîne Meson/Linux/Windows/ARM doit continuer à fonctionner pendant P-1. Ne
 **Statut : P-1.1 amorcé ; P0 non commencé.** Ce lot sauvegarde et retire les workflows hérités, ajoute un runbook C/Linux initial et un premier outil d'inventaire. Ces livrables sont écrits mais pas encore tous exécutés/validés.
 
 1. **P-1.1 — Baseline C/PC** : procédure initiale dans [`docs/operations/c-baseline.md`](docs/operations/c-baseline.md). Build local froid, sorties exactes, checksum et première scène repère restent à vérifier.
-2. **P-1.2 — Inventaire** : script [`tools/scripts/repo_inventory.py`](tools/scripts/repo_inventory.py) créé. Il lit un arbre Git commité, sans les fichiers untracked/ignorés ; exécution et revue du rapport restent à faire.
+2. **P-1.2 — Inventaire** : script [`tools/scripts/repo_inventory.py`](tools/scripts/repo_inventory.py) exécuté deux fois par CI avec des sorties JSON identiques ; premier artefact obtenu et résumé dans [`docs/assets/format-inventory.md`](docs/assets/format-inventory.md). La classification sémantique, les producteurs/consommateurs, les formats et la provenance/licences restent à vérifier.
 3. **P-1.3 — Parité fonctionnelle** : feature matrix, parcours vertical et fixtures.
 4. **P-1.4 — ADR et spike Bevy** : frontières Bevy/domaine, deux surfaces logiques, coordonnées, tick/RNG, voie de rendu et choix final de version.
 5. **P-1.5 — Toolchain/qualité** : workspace indépendant, version Rust stable fixée, `Cargo.lock`, fmt/clippy/tests.
