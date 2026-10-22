@@ -134,12 +134,12 @@ Les captures GPU peuvent varier légèrement selon la plateforme. Comparer sépa
 
 ## 5. Chantier C — architecture et décisions (ADR)
 
-Avant d'écrire des systèmes de gameplay, créer un dossier docs/architecture/decisions/ et y consigner des décisions courtes, datées, discutables et révisables.
+Le dossier [`docs/architecture/decisions/`](decisions/README.md) est initialisé. [ADR-0001](decisions/ADR-0001-bevy-infrastructure-domain-pure-rust.md) formalise la frontière acceptée entre le domaine Rust pur, l'infrastructure Bevy et les adaptateurs DS. Les autres décisions ci-dessous restent ouvertes jusqu'à un spike ou un test pertinent.
 
 ADR prioritaires :
 
-- **ADR-0001 :** Bevy comme infrastructure ; code du domaine indépendant du moteur.
-- **ADR-0002 :** frontières du workspace et responsabilité de chaque crate.
+- **ADR-0001 — accepté :** Bevy comme infrastructure ; code du domaine en Rust pur indépendant de Bevy.
+- **ADR-0002 — à rédiger :** frontières du workspace et responsabilité de chaque crate.
 - **ADR-0003 :** coordonnées, unités, axes, origines, conversion fixed-point DS et positions sur grille.
 - **ADR-0004 :** ticks, ordre des systèmes, déterminisme, RNG et traitement des opérations asynchrones.
 - **ADR-0005 :** composition des écrans, pipeline 2D DS et voie de rendu 3D.

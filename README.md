@@ -14,7 +14,8 @@ Si tu arrives dans ce dépôt avec seulement son URL, suis cet ordre :
 4. **[Matrice fonctionnelle](docs/migration/feature-matrix.md)** — priorités provisoires, parcours proposé et preuves de parité attendues.
 5. **[Baseline C/Linux](docs/operations/c-baseline.md)** et **[provenance/licences](docs/assets/provenance-and-licenses.md)** — état compilé, checksums, dépendances et risques connus.
 6. **[Politique commits/CI](docs/operations/commit-and-ci-policy.md)** — grouper les commits pour une seule mise à jour de branche et éviter les builds obsolètes.
-7. Les documents techniques historiques sous **[docs/](docs/)** pour le rendu DS, les cartes et les ressources.
+7. [ADR d'architecture](docs/architecture/decisions/README.md) — décisions acceptées et sujets ouverts.
+8. Les documents techniques historiques sous **[docs/](docs/)** pour le rendu DS, les cartes et les ressources.
 Toujours vérifier le HEAD réel de la branche `pc_port` sur GitHub avant de commencer. Les SHAs notées dans un handoff sont des repères historiques, pas une source d'état plus récente que le dépôt.
 
 ## Décisions d'architecture
@@ -33,6 +34,7 @@ Toujours vérifier le HEAD réel de la branche `pc_port` sur GitHub avant de com
 - `tools/scripts/repo_inventory.py` a été exécuté deux fois par CI avec des sorties identiques. Son premier snapshot et les extensions à confirmer sont documentés dans [l'inventaire des formats](docs/assets/format-inventory.md).
 - L'audit de wrappers a identifié des références Git mutables (`main`, `nx_support`) et des notices de licence à vérifier ; voir [provenance et licences](docs/assets/provenance-and-licenses.md).
 - Une matrice provisoire formalise les priorités et la preuve attendue avant de porter chaque système : [matrice fonctionnelle](docs/migration/feature-matrix.md).
+- [ADR-0001](docs/architecture/decisions/ADR-0001-bevy-infrastructure-domain-pure-rust.md) formalise la séparation Rust pur/Bevy ; la version Bevy et la forme du workspace restent à valider par spike.
 - Les lots liés doivent toujours être publiés en une seule mise à jour de référence ; voir la politique commits/CI.
 - Le workspace Rust `engine/`, `xtask`, le spike Bevy et la CI Rust restent à créer pendant P-1.
 
