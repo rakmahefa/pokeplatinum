@@ -84,6 +84,8 @@ Un relevé initial des wrappers, refs mutables et fichiers de licence visibles e
 
 ### B1. Matrice de fonctionnalités
 
+Le premier brouillon versionné est [`docs/migration/feature-matrix.md`](../migration/feature-matrix.md). Il traduit les priorités de `audit.md` en preuves testables, mais ne valide pas encore le choix de la carte ni le contrat produit.
+
 Créer une table suivie en Git, par fonctionnalité et non par pourcentage abstrait :
 
 - fonctionnalité et identifiant stable ;
@@ -95,7 +97,7 @@ Créer une table suivie en Git, par fonctionnalité et non par pourcentage abstr
 - test qui prouve le résultat ;
 - divergences connues et décision produit.
 
-Commencer par le « parcours vertical » choisi : démarrer, afficher deux écrans, entrer dans une carte, déplacer le personnage, collisionner avec un obstacle, parler à un PNJ, exécuter un petit script et déclencher une transition. Le parcours doit être choisi à partir des ressources réelles du dépôt et documenté avec les IDs nécessaires.
+Le parcours vertical proposé est : démarrer, afficher deux écrans, entrer dans une carte, déplacer le personnage, collisionner avec un obstacle, parler à un PNJ, exécuter un script réel et déclencher une transition. **Il n'est pas encore choisi définitivement** : sélectionner la carte seulement après revue des ressources disponibles, de leurs IDs/consommateurs et de leur provenance. La matrice de brouillon ne vaut pas validation du produit.
 
 ### B2. Contrat de compatibilité
 
