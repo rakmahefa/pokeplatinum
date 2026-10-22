@@ -27,30 +27,18 @@ L'utilisateur a confirmé qu'il s'agit de son fork et a demandé de supprimer le
 
 ## 3. État Git connu
 
-HEAD vérifié avant ce lot : `0ab58358753f32e2c247a6bdde98fdce0f9e2103`. Toujours relire le HEAD réel de `pc_port` avant d'agir ; cette SHA est un repère historique.
-
-Commits vérifiés de ce chantier :
-- `4e42a86afe9dcd4aff2c0cdba4a0f596a427a955` — archive exacte des trois workflows historiques ;
-- `a0ab305b6fc52a0e5e2b95fd64abd31a4b388a0e` — retrait des trois entrées actives ;
-- `e71df0f741f7bc18f0567f102ed46de86c020cd7` — runbook initial et script d'inventaire ;
-- `b58233c4d47f56b75d863200e557bf989948d3e6` — workflow de contrôle docs/inventaire ;
-- `7a07925f620e327e2126d2af931785ed35a563a8` — workflow C/Linux ;
-- `445533d142aee68f87fdf0852b9f14ec00f7ca66` — artefact d'inventaire initial ;
-- `fef27a2cb5c31356ddddcf14693784febea56b08` et `f5e12b8325f0941a7fa901aa88e28a5090cd8fb1` — premier snapshot des formats/volumes ;
-- `15da327073d76246fd36e0fd24ac588dff014716` — runbook de baseline, registre de provenance/licences et instrumentation des dépendances du prochain run ;
-- `0ab58358753f32e2c247a6bdde98fdce0f9e2103` — matrice fonctionnelle provisoire.
+HEAD avant le lot d'épinglage : `ddbd00e277f858469ca012e288cdff9e0b8384be`. Toujours relire le HEAD courant de `pc_port` avant toute écriture.
 
 Résultats CI confirmés :
-- [Preparation checks 39724440638](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724440638) : `success`, syntaxe Python et déterminisme de l'inventaire validés.
-- [Preparation checks 39724791913](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724791913) : `success`, artefact JSON ; snapshot au commit `445533d` : 27 712 blobs / 138 524 927 octets.
-- [Preparation checks 39725079397](https://github.com/rakmahefa/pokeplatinum/actions/runs/39725079397) : `success`.
-- [Preparation checks 39725655240](https://github.com/rakmahefa/pokeplatinum/actions/runs/39725655240) : `success`.
-- [Preparation checks 39726156234](https://github.com/rakmahefa/pokeplatinum/actions/runs/39726156234) : `success`.
-- [Baseline C/Linux 39724681527](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724681527) : `success` sur `7a07925`. Les étapes `make skrew`, `make linux`, les quatre sorties attendues et le manifeste SHA-256 sont validés. La taille du ZIP manifeste est 485 octets ; aucun exécutable n'a été téléversé.
-- [Baseline C/Linux enrichi 39725655227](https://github.com/rakmahefa/pokeplatinum/actions/runs/39725655227) : `in_progress` au dernier contrôle sur `15da327`. `make skrew` est terminé ; `make linux` est encore indiqué en cours. Pas de résultat final ni de manifeste enrichi confirmé à ce stade.
-- L'ancien Windows [run 39722714273](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714273) a terminé avec `success`. Les anciens Linux/ARM (`39722714025`, `39722714020`) avaient aussi réussi au commit `ef958c9`.
+- [Preparation checks 39726156234](https://github.com/rakmahefa/pokeplatinum/actions/runs/39726156234) : `success`, contrôle de l'inventaire/déterminisme.
+- [Preparation checks 39726461321](https://github.com/rakmahefa/pokeplatinum/actions/runs/39726461321) : `success`, handoff/ADR.
+- [Baseline C/Linux 39724681527](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724681527) : `success`, build de référence au commit `7a07925`.
+- [Baseline enrichie 39725655227](https://github.com/rakmahefa/pokeplatinum/actions/runs/39725655227) : `success` au commit `15da327`. Le manifeste capture Docker Engine 28.0.4, l'image custom et les SHAs de sous-projets Git détectées.
+- Les deux builds ont les mêmes tailles et SHA pour `firmware.bin`/`header.bin`, mais des SHA différentes pour `main`/AppImage, malgré un diff Git entre HEAD composé uniquement de docs/workflows. Cause inconnue ; reproductibilité bit à bit non validée.
+- Les SHAs de libntr, libntrdwc, libntrsystem, libntrwifi, libvct et metang observées dans le manifeste sont épinglées dans les wrappers et `update.ini`. Le Makefile vérifie le commit exact de Meson 1.12.0 ; le build suivant doit valider ces épingles.
+- Les anciens workflows C Linux/ARM/Windows ont terminé avec `success` sur le commit historique `ef958c9`. Les originaux sont archivés à l'identique dans `docs/operations/workflow-archive/2026-10-22/`.
 
-État des actifs CI : seuls `.github/workflows/preparation-checks.yml` et `.github/workflows/baseline-c-linux.yml` sont actifs. Les trois anciens workflows restent copiés à l'identique dans `docs/operations/workflow-archive/2026-10-22/`.
+Workflows actifs : `.github/workflows/preparation-checks.yml` et `.github/workflows/baseline-c-linux.yml`. Les actions checkout/upload-artifact y sont épinglées par SHA complète dans le présent lot.
 
 ## 4. Documents à lire en premier
 
@@ -91,7 +79,7 @@ La chaîne Meson/Linux/Windows/ARM doit continuer à fonctionner pendant P-1. Ne
 
 ## 6. Phase en cours : P-1 — Préparation
 
-**Statut : P-1.1 compilation CI validée, parité runtime encore ouverte ; P-1.2 inventaire amorcé ; P-1.3 matrice provisoire créée ; P-1.4 ADR-0001 formalisée. P0 non commencé.** Le premier build C/Linux passe sur `7a07925`; un second run capture les dépendances, mais demeure en cours au dernier contrôle.
+**Statut : P-1.1 compilation CI validée, reproductibilité bit à bit et parité runtime encore ouvertes ; P-1.2 inventaire amorcé ; P-1.3 matrice provisoire créée ; P-1.4 ADR-0001 formalisée. P0 non commencé.** Le run enrichi a capturé les dépendances ; leurs SHAs sont épinglées dans ce lot et restent à valider par un nouveau build.
 
 1. **P-1.1 — Baseline C/PC** : build GitHub réussi, quatre sorties et SHA-256 documentés dans [`docs/operations/c-baseline.md`](docs/operations/c-baseline.md). Exécution locale froide, capture d'une scène repère et validation runtime restent à faire.
 2. **P-1.2 — Inventaire** : script [`tools/scripts/repo_inventory.py`](tools/scripts/repo_inventory.py) exécuté deux fois par CI avec des JSON identiques ; premier artefact résumé dans [`docs/assets/format-inventory.md`](docs/assets/format-inventory.md). Les refs Git mutables et les licences visibles sont consignées dans [`docs/assets/provenance-and-licenses.md`](docs/assets/provenance-and-licenses.md). Il reste à cartographier les producteurs/consommateurs et à verrouiller les dépendances.
@@ -139,14 +127,14 @@ Les workflows actifs ont été recréés séparément : `.github/workflows/prepa
 
 ## 9. Prochaines actions recommandées
 
-1. Relancer `baseline-c-linux.yml` enrichi and review the recorded Docker image, wrap hashes and resolved dependency SHAs; pin mutable refs only after review and a successful rebuild.
-2. Exécuter le protocole local de build à froid and document the launch/configuration requirements for a scene-reference capture.
-3. Terminer P-1.2 en cartographiant les producteurs/consommateurs des ressources, les fichiers générés, les usages des dépendances et les licences/provenance.
-4. Poursuivre P-1.3/P-1.4 : matrice de fonctionnalités, parcours vertical fondé sur les ressources réellement disponibles et ADR.
-5. Créer le workspace/toolchain Rust et un `rust-pr.yml` minimal uniquement après approbation du spike Bevy et des frontières de workspace.
-6. Mettre à jour ce handoff avec les résultats mesurés et le nouveau HEAD.
+1. Vérifier le run C/Linux suivant l'épinglage des SHAs ; confirmer les révisions attendues et réparer toute erreur de résolution.
+2. Enquêter sur la différence de hashes de `main`/AppImage entre les runs 39724681527 et 39725655227. Le Dockerfile utilise encore `FROM debian:13` et des versions de paquets non figées ; relever les versions et isoler la cause au lieu de supposer qu'une variable temporelle suffit.
+3. Exécuter un build local froid, puis lancer l'application et documenter une scène repère.
+4. Compléter P-1.2 avec la cartographie des producteurs/consommateurs, formats et provenance/licences ; épingler Tracy lors d'un build qui l'utilise réellement.
+5. Poursuivre P-1.3/P-1.4 : choisir une carte pilote à partir des ressources disponibles, fixer le contrat de parité et rédiger les ADR restantes.
+6. Créer le workspace/toolchain Rust seulement après un spike Bevy reproductible et des frontières de crates approuvées.
 
-Ne pas déclarer la baseline validée, un script testé ou un workflow vert tant que ces résultats n'ont pas été obtenus et vérifiés.
+Ne pas déclarer la baseline globale validée tant que le runtime, la scène repère, le build local et les divergences de hashes ne sont pas traités.
 
 ## 10. Règle de mise à jour de ce handoff
 

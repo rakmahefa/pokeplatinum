@@ -24,6 +24,8 @@ ROM_REVISION ?= 1
 SUBPROJ_DIR := subprojects
 
 MESON_VER := 1.12.0
+# Verify this tag resolves to the exact Meson commit used by the accepted baseline.
+MESON_COMMIT := ab4508e6abe338a3bd2e6eb5da1d18b8cf55dc93
 MESON_DIR := $(SUBPROJ_DIR)/meson-$(MESON_VER)
 
 MESON ?= $(MESON_DIR)/meson.py
@@ -229,6 +231,7 @@ $(BUILD_NX):
 	mkdir -p -- $(BUILD_NX) 
 
 meson: $(MESON)
+	@test "$($(GIT) -C $(MESON_DIR) rev-parse HEAD)" = "$(MESON_COMMIT)" || { printf 'Meson $(MESON_VER) did not resolve to pinned commit $(MESON_COMMIT)\n' >&2; exit 1; }
 
 $(MESON):
 	$(GIT) clone --depth=1 -b $(MESON_VER) https://github.com/mesonbuild/meson $(@D)

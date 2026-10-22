@@ -28,9 +28,45 @@ Les quatre fichiers étaient présents, non vides, sous `build_linux/pokeplatinu
 
 SHA-256 du fichier de manifeste décompressé lui-même : `20700e4f4812727e97199acbc02fe2948cd4283ec8ea276b3eda9f51431a6159`.
 
-Ces empreintes sont une référence observée sur ce runner, pas une garantie de reproductibilité bit à bit sur une autre machine. Le premier run ne conservait pas encore les révisions exactes des dépendances Git téléchargées ; le workflow est maintenant renforcé pour les enregistrer lors des prochains builds.
+Ces empreintes sont des observations CI, pas une garantie de reproductibilité bit à bit. Le deuxième build a capturé les dépendances, mais les SHA de `main`/AppImage diffèrent du premier run ; la cause reste ouverte.
 
-## 3. Prérequis et reproduction locale
+
+## 3. Deuxième build, dépendances capturées et divergence
+
+- Run [39725655227](https://github.com/rakmahefa/pokeplatinum/actions/runs/39725655227), conclusion `success`, commit source `15da327073d76246fd36e0fd24ac588dff014716`.
+- Artefact ID `12403386690`, ZIP de 1 590 octets, [manifeste enrichi](sandbox:/mnt/data/c-baseline-linux-enriched-manifest.zip). Il contient des métadonnées et SHA-256 uniquement, jamais les exécutables.
+- Environnement : `Linux 6.17.0-1022-azure x86_64`, Docker Engine `28.0.4`, image custom ID `sha256:885286ae5f84383c2cede5e3345e6a1d47b409796a9a51961464802a22f0bbce`.
+- Meson `1.12.0` : commit observé `ab4508e6abe338a3bd2e6eb5da1d18b8cf55dc93`.
+- `subprojects/.wraplock` était présent mais vide.
+
+SHAs Git des sous-projets détectés par ce run :
+
+| Checkout | Commit |
+|---|---|
+| `libntr` | `1555d911ac80c0190ac1c321f99f1323de8b3c09` |
+| `libntrdwc` | `16246ba7b4269e6686f3e4da068e3c996a103739` |
+| `libntrsystem` | `cd778c9d5e45869f8ecb8245b316ac20ea576958` |
+| `libntrwifi` | `067dabb137dfaf80b8ceeb3b3c4a7256bfabc3e0` |
+| `libvct` | `a34ad47fc0d7d964483c287759b704b3b1f3b967` |
+| `metang` | `d616519ce37bc9ceef556969a1ca2dc64bf88390` |
+| `meson-1.12.0` | `ab4508e6abe338a3bd2e6eb5da1d18b8cf55dc93` |
+
+Sorties du deuxième run :
+
+| Sortie | Taille (octets) | SHA-256 |
+|---|---:|---|
+| `firmware.bin` | 1 584 | `623d2357e4dce812edae3411e7877ed2c5408953bf7cde7ec38d10a9bd0bdfb6` |
+| `header.bin` | 352 | `b42bcf480f162ca32ecdaa38006ae4bf4b57e6c095006113b83a0bf9274361b3` |
+| `main` | 70 963 760 | `4ff7240efd8fde741c4984f48ca77760e80ca08f0aa3f7e254c2c2c1c2f2e739` |
+| `pokeplatinum.AppImage` | 39 004 664 | `dd05742932447ae9514ad927004f12d9ac90406fd7923242632df44af2092939` |
+
+### Divergence à résoudre
+
+Les deux builds gardent les mêmes tailles et SHA pour `firmware.bin` et `header.bin`, mais les hashes de `main` et de l'AppImage diffèrent. Le diff Git entre les révisions `7a07925` et `15da327` ne comprend que des changements de CI et de documentation, pas les sources C ou les fichiers de build. La cause exacte est inconnue. Des variables à contrôler — et non des causes déjà prouvées — incluent le tag Docker mutable `debian:13`, les versions de paquets non figées, des données générées ou des métadonnées de liaison/paquetage.
+
+Les SHAs observées pour six dépendances Git sont épinglées dans les wrappers et `subprojects/update.ini`. Le Makefile vérifie également que le tag Meson `1.12.0` correspond au commit ci-dessus. Le run suivant doit confirmer ces épingles. `tracy.wrap` reste non épinglé : son checkout n'a pas été détecté par le build Linux.
+
+## 4. Prérequis et reproduction locale
 
 - Git et un clone propre du dépôt.
 - Docker Engine/CLI installé, démarré et utilisable par l'utilisateur courant.
@@ -54,9 +90,9 @@ GITHUB_ACTIONS=true ./drun.sh make linux
 
 Avant le build, `git status --short` doit être vide et `git rev-parse HEAD` doit afficher exactement la SHA indiquée. `GITHUB_ACTIONS=true` demande à `drun.sh` d'utiliser `USE_DEVKITPRO=0`, comme sur GitHub Actions. Le script réutilise l'image locale `pokeplatinum-build` si elle existe déjà ; pour une comparaison propre, noter cette image et éviter de remplacer des conteneurs/volumes utilisateur.
 
-Les dépendances `subprojects/*.wrap` contiennent encore des références Git mutables telles que `main`. Le successful run ci-dessus prouve que cette résolution a compilé à cet instant, mais son manifeste initial ne capture pas les commits réellement résolus. La revue du [registre de provenance et licences](../assets/provenance-and-licenses.md) traite ce risque ; une reproduction bit à bit ne doit pas être annoncée avant d'avoir verrouillé et vérifié ces références.
+Les dépendances Git détectées par la baseline Linux sont maintenant épinglées. Le prochain run doit confirmer leur récupération et la compilation avant de considérer ces épingles comme validées.
 
-## 4. Journal local
+## 5. Journal local
 
 Conserver les logs complets dans un répertoire local hors Git. La commande suivante s'arrête au premier échec et conserve la sortie pour le diagnostic :
 
@@ -76,21 +112,21 @@ printf 'Journal local : %s\n' "$LOG_DIR/build-linux.log"
 
 Une sortie de commande locale différente doit être analysée séparément, avec le code de sortie et l'environnement. Ne pas remplacer un échec par une réussite supposée.
 
-## 5. État de validation
+## 6. État de validation
 
 | Critère | État |
 |---|---|
 | Révision et run CI de compilation fixés | Validé pour le build du commit `7a07925` |
 | `make skrew` et `make linux` réussis | Validé sur le runner GitHub du run 39724681527 |
 | Quatre sorties présentes et checksums enregistrés | Validé ; manifeste limité aux métadonnées |
-| Révisions exactes des dépendances capturées dans le premier run | Non ; workflow renforcé pour le prochain run |
+| Révisions exactes des dépendances capturées | Oui au run 39725655227 ; épingles appliquées, build de confirmation en attente |
 | Reproduction locale froide indépendante | À exécuter |
 | Lancement de l'application et capture d'une scène repère | À exécuter avec les données nécessaires |
 | Baseline fonctionnelle/parité visuelle | Non établie |
 
 La baseline de **compilation CI** est donc établie. La baseline globale C/PC reste ouverte jusqu'à ce que les dépendances soient verrouillées ou enregistrées, qu'une reproduction locale soit tentée et qu'un premier scénario runtime soit documenté.
 
-## 6. Hygiène des données
+## 7. Hygiène des données
 
 - Ne committer aucun log complet de machine, ROM, sauvegarde utilisateur, asset privé ou artefact binaire.
 - Ne téléverser aucun de ces éléments dans les artefacts CI.

@@ -4,29 +4,29 @@
 
 ## 1. Dépendances Meson déclarées
 
-La révision examinée utilise neuf fichiers `.wrap` sous `subprojects/`. Les valeurs de révision ci-dessous sont copiées du dépôt ; elles ne prouvent pas à elles seules les commits effectivement téléchargés lors d'un build.
+La révision examinée utilise neuf fichiers `.wrap` sous `subprojects/`. Le run [39725655227](https://github.com/rakmahefa/pokeplatinum/actions/runs/39725655227) a capturé les commits effectifs des checkouts Git présents ; six dépendances résolues sont épinglées dans ce lot. Le build suivant doit les valider.
 
 | Fichier | Source / identifiant déclaré | Type | Risque / action |
 |---|---|---|---|
-| `libntr.wrap` | `https://github.com/cybervisi0n/libntr.git`, `revision = main` | Git, profondeur 1 | Référence mutable ; verrouiller sur un SHA après revue. |
-| `libntrdwc.wrap` | `https://github.com/cybervisi0n/libntrdwc.git`, `revision = main` | Git, profondeur 1 | Référence mutable ; verrouiller sur un SHA après revue. |
-| `libntrsystem.wrap` | `https://github.com/cybervisi0n/libntrsystem.git`, `revision = main` | Git, profondeur 1 | Référence mutable ; verrouiller sur un SHA après revue. |
-| `libntrwifi.wrap` | `https://github.com/cybervisi0n/libntrwifi.git`, `revision = main` | Git, profondeur 1 | Référence mutable ; verrouiller sur un SHA après revue. |
-| `libvct.wrap` | `https://github.com/cybervisi0n/libvct.git`, `revision = main` | Git, profondeur 1 | Référence mutable ; verrouiller sur un SHA après revue. |
-| `metang.wrap` | `https://github.com/lhearachel/metang.git`, `revision = v0.2.0-python` | Git, ref nommée | Ce n'est pas une SHA explicite ; confirmer si cette ref est immuable et relever le commit résolu. |
+| `libntr.wrap` | `https://github.com/cybervisi0n/libntr.git`, `revision = 1555d911ac80c0190ac1c321f99f1323de8b3c09` | Git SHA, profondeur 1 | Épinglé à la révision observée ; rebuild de validation requis. |
+| `libntrdwc.wrap` | `https://github.com/cybervisi0n/libntrdwc.git`, `revision = 16246ba7b4269e6686f3e4da068e3c996a103739` | Git SHA, profondeur 1 | Épinglé à la révision observée ; rebuild de validation requis. |
+| `libntrsystem.wrap` | `https://github.com/cybervisi0n/libntrsystem.git`, `revision = cd778c9d5e45869f8ecb8245b316ac20ea576958` | Git SHA, profondeur 1 | Épinglé à la révision observée ; rebuild de validation requis. |
+| `libntrwifi.wrap` | `https://github.com/cybervisi0n/libntrwifi.git`, `revision = 067dabb137dfaf80b8ceeb3b3c4a7256bfabc3e0` | Git SHA, profondeur 1 | Épinglé à la révision observée ; rebuild de validation requis. |
+| `libvct.wrap` | `https://github.com/cybervisi0n/libvct.git`, `revision = a34ad47fc0d7d964483c287759b704b3b1f3b967` | Git SHA, profondeur 1 | Épinglé à la révision observée ; rebuild de validation requis. |
+| `metang.wrap` | `https://github.com/lhearachel/metang.git`, `revision = d616519ce37bc9ceef556969a1ca2dc64bf88390` | Git SHA, profondeur 1 | Épinglé à la révision observée ; rebuild de validation requis. |
 | `tracy.wrap` | `https://github.com/cybervisi0n/tracy.git`, `revision = nx_support` | Git, branche/ref nommée | Pas une SHA explicite ; confirmer le commit utilisé. |
 | `rapidjson.wrap` | Archive amont `v1.1.0`, SHA-256 source `bf7ced29704a1e696fbccf2a2b4ea068e7774fa37f6d7dd4039d0787f8bed98e` ; patch WrapDB `1.1.0-2`, SHA-256 `c1480d0ecef09dbaa4b4d85d86090205386fb2c7e87f4f158b20dbbda14c9afc` | Archive versionnée et hashée | Hachages déclarés dans le wrap ; confirmer licences de l'archive et des patches. |
 | `yyjson.wrap` | Archive amont `0.12.0`, SHA-256 source `b16246f617b2a136c78d73e5e2647c6f1de1313e46678062985bdcf1f40bb75d` ; patch WrapDB `0.12.0-1`, SHA-256 `014582b328e13671dea64fcb49a795e70142360216a505212b8045134781b3b5` | Archive versionnée et hashée | Hachages déclarés dans le wrap ; confirmer licences de l'archive et des patches. |
 
-`subprojects/update.ini` répète `revision = main` pour NitroDWC, NitroSDK, NitroSystem, NitroWiFi et libvct. Cette duplication doit rester cohérente avec les wrappers. Les valeurs `main` et `nx_support` peuvent avancer et modifier le build sans changement du commit de ce dépôt.
+`subprojects/update.ini` est épinglé sur les mêmes SHAs pour NitroDWC, NitroSDK, NitroSystem, NitroWiFi et libvct. Tracy (`nx_support`) reste la seule référence nommée de ce groupe ; son checkout n'a pas été détecté dans le run Linux et devra être épinglé avant d'utiliser cette cible.
 
-Le répertoire `subprojects/.wraplock` et les checkouts téléchargés sont ignorés par `.gitignore` ; ils ne sont pas des preuves versionnées dans cet arbre. Le premier build CI réussi (run [39724681527](https://github.com/rakmahefa/pokeplatinum/actions/runs/39724681527)) ne consignait que les sorties compilées, pas les SHAs effectives des dépendances Git. Le workflow est renforcé pour les prochains runs afin de capturer l'image Docker locale, les hashes des définitions `.wrap`, le lockfile s'il existe et les commits résolus détectables dans les checkouts.
+Le répertoire `subprojects/.wraplock` est présent mais vide dans le run observé ; les checkouts sont ignorés par `.gitignore`. Le manifeste enrichi 39725655227 capture l'identifiant Docker, les hashes des définitions `.wrap` et les commits résolus. Les SHAs de six dépendances détectées ont été épinglées ; le build suivant doit confirmer la résolution de ces commits.
 
 ### Politique de verrouillage proposée
 
 1. Lors d'un run de build accepté, relever chaque commit de sous-projet effectivement utilisé.
-2. Examiner les différences et la licence upstream ; ne pas mettre à jour aveuglément un composant pour la seule raison que `main` a avancé.
-3. Remplacer les refs Git mutables par des SHAs immuables dans les `.wrap` une fois le set de dépendances examiné et le build relancé avec succès.
+2. Valider les épingles SHA déjà appliquées avec un build propre ; examiner aussi la provenance et la licence de chaque dépendance.
+3. Résoudre et épingler séparément Tracy lors d'un build qui utilise réellement cette dépendance.
 4. Conserver les hashes déclarés des sources d'archives et patches ; une vérification de hash n'est pas, à elle seule, une preuve de licence ou de provenance.
 5. Démontrer qu'un build sans cache reconstruit les mêmes dépendances. Les caches Meson/Cargo restent des accélérateurs, pas la source de vérité.
 
@@ -53,7 +53,7 @@ La recherche a aussi trouvé `res/graphics/title_screen/copyright.NSCR`, `copyri
 
 ## 4. Prochaines actions
 
-1. Capturer le manifeste enrichi du prochain run `baseline-c-linux` et examiner les révisions de chaque sous-projet détecté.
+1. Valider le build de confirmation après l'épinglage des SHAs et comparer ses dépendances effectives aux valeurs attendues.
 2. Construire une matrice dépendance → origine → commit/version → licence → usage → redistribution permise/interdite/inconnue.
 3. Examiner les licences amont et les notices des composants non couverts par les quatre fichiers recensés.
 4. Définir les fixtures autorisées pour les tests Rust, sans extraire ni téléverser des ressources privées.

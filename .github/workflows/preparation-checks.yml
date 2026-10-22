@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Validate inventory script syntax
         run: python3 -c "import ast; from pathlib import Path; ast.parse(Path('tools/scripts/repo_inventory.py').read_text(encoding='utf-8'))"
@@ -57,7 +57,7 @@ jobs:
           PY
 
       - name: Upload metadata-only inventory report
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: repository-inventory-${{ github.sha }}
           path: ${{ runner.temp }}/inventory-1.json
