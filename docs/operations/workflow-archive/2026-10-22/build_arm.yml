@@ -1,0 +1,42 @@
+name: build_arm
+
+on:
+  push:
+    branches: [ pc_port ]
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+# Supersede obsolete builds when a newer commit arrives on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Build and artifact-upload jobs do not need write access to repository contents.
+permissions:
+  contents: read
+
+env:
+  LM_LICENSE_FILE: "${{ github.workspace }}/tools/cw/license.dat"
+  BUILD: /var/tmp/pokeplatinum
+
+jobs:
+  build_arm:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Install Software
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y --no-install-recommends fuse git python3 wget zip
+
+      - name: Checkout Repo
+        uses: actions/checkout@v6
+
+      - name: Install Metroskrew
+        run: ./drun.sh make skrew
+
+      - name: Build (ARM)
+        run: ./drun.sh make
