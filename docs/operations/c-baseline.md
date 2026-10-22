@@ -54,7 +54,7 @@ Le workflow historique exécutait ensuite `tools/scripts/package_artifacts_linux
 Depuis la racine du clone, stocker la sortie complète dans un répertoire local **hors Git**. Ne pas ajouter automatiquement ce journal à un artefact CI ou au dépôt.
 
 ```bash
-set -o pipefail
+set -euo pipefail
 LOG_DIR="$(mktemp -d /tmp/pokeplatinum-baseline.XXXXXX)"
 {
   date -u

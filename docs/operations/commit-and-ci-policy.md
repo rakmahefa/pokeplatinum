@@ -11,7 +11,7 @@ Pour une série de changements liés, l'objectif est de publier **une seule mise
 - **Développement local :** faire autant de commits cohérents que nécessaire sur une branche de travail, puis pousser la série en une seule fois.
 - **Modifications par API GitHub / agent :** préparer tous les blobs et arbres, créer un ou plusieurs commits liés, puis déplacer la référence de branche une seule fois. Ne pas utiliser `create_file` ou `update_file` successivement sur la branche surveillée pour chaque fichier d'un même lot.
 - **Sécurité CI :** les trois workflows historiques ont été sauvegardés sous `docs/operations/workflow-archive/2026-10-22/` et supprimés de `.github/workflows/` pour commencer la refonte P-1.
-- **État temporaire :** aucun workflow n'est actuellement actif. La création des nouveaux workflows fait partie de P-1 ; elle ne doit pas réintroduire automatiquement les anciens fichiers.
+- **État temporaire :** seul `.github/workflows/preparation-checks.yml` est actif. Il teste la syntaxe et le déterminisme de l'inventaire, pas le build du jeu. Les workflows de compilation C/Rust restent à concevoir pendant P-1.
 - **Documents :** les nouveaux contrôles devront vérifier les Markdown et les liens sans lancer inutilement les compilations du jeu.
 - **Publication :** ne pas mélanger les tâches de publication avec les tâches de test et de compilation.
 
@@ -95,7 +95,7 @@ Règles :
 
 Les fichiers historiques `build_linux.yml`, `build_win.yml` et `build_arm.yml` sont archivés dans `docs/operations/workflow-archive/2026-10-22/`. Les copies sont hors de `.github/workflows/` ; les originaux actifs ont été supprimés en un lot.
 
-**Aucun workflow GitHub Actions n'est actuellement actif.** Les runs lancés avant le retrait peuvent continuer indépendamment de l'état du HEAD ; ils ne signifient pas qu'un workflow supprimé reste actif.
+**Seul `.github/workflows/preparation-checks.yml` est actuellement actif.** Il ne lance pas de compilation C/Rust. Les runs lancés avant le retrait des anciens workflows peuvent continuer indépendamment de l'état du HEAD ; cela ne signifie pas qu'un workflow supprimé reste actif.
 
 Les nouveaux workflows P-1 devront définir :
 - événements `push`, `pull_request`, branches et chemins concernés ;
