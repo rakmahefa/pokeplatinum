@@ -12,6 +12,10 @@ Le propriétaire du fork prépare une migration du port PC de Pokémon Platinum 
 
 L'utilisateur a confirmé qu'il s'agit de son fork et a demandé de supprimer les directives/docs originaux avant d'effectuer son audit. Les documents généraux originaux et `AGENTS.md` ont été supprimés par commit ; le répertoire technique `docs/` a ensuite été restauré car il demeure utile au portage.
 
+**Règle impérative de passation :** à chaque lot de changements publié sur `pc_port`, mettre à jour `SESSION_HANDOFF.md` dans ce même lot, avant l'unique mise à jour de référence. Une session qui reprend le dépôt doit lire ce fichier et le HEAD réel avant d'agir, puis actualiser le handoff avec le nouvel état, les changements du lot, les tests réellement exécutés, l'état des workflows et la prochaine action. Cette règle évite de répéter une opération déjà terminée ou de repartir d'un état périmé.
+
+**Archivage des workflows : étape initiale terminée une seule fois.** Les workflows historiques ont déjà été archivés et retirés de `.github/workflows/`. Ne pas recommencer cette opération, ne pas créer une nouvelle archive des mêmes fichiers et ne pas tenter de réarchiver les workflows déjà remplacés. Si la CI doit évoluer, examiner les workflows actuellement actifs et les modifier ou les remplacer proprement selon le besoin, sans reprendre la procédure d'archivage initiale.
+
 ## 2. Décisions de conception prises
 
 - **Direction retenue : Rust + Bevy.** Ne pas construire dès le départ un moteur totalement indépendant de Bevy.
@@ -75,7 +79,7 @@ Systèmes source à traiter attentivement :
 - `src/sound_system.c` : audio basé sur SDAT/Nitro ;
 - `meson.build`, `meson.options`, Makefile et `.github/workflows/` : chaîne de build existante.
 
-La chaîne Meson/Linux/Windows/ARM doit continuer à fonctionner pendant P-1. Ne pas remplacer ou supprimer les workflows historiques au moment de créer les workflows Rust.
+La chaîne Meson/C/Linux/Windows/ARM existante doit rester utilisable pendant P-1. La création des workflows de préparation a déjà eu lieu : l'archivage initial est terminé et ne doit pas être répété. Toute évolution future de la CI doit partir des workflows présents dans `.github/workflows/`, après inspection de leur contenu et de leurs déclencheurs.
 
 ## 6. Phase en cours : P-1 — Préparation
 
@@ -96,7 +100,7 @@ L'ordre détaillé et les critères restent dans `docs/architecture/PREPARATION.
 
 ## 7.1. Politique de commits et de ref
 
-La procédure documentée dans [`docs/operations/commit-and-ci-policy.md`](docs/operations/commit-and-ci-policy.md) reste en vigueur : faire les commits logiques en chaîne, créer les blobs/arbres/commits, puis déplacer `pc_port` une seule fois avec un contrôle `expected_sha` et sans force-push. Les vieux groupes de concurrence sont conservés uniquement dans l'archive ; `preparation-checks.yml` et `baseline-c-linux.yml` sont les workflows de remplacement, avec des périmètres distincts.
+La procédure documentée dans [`docs/operations/commit-and-ci-policy.md`](docs/operations/commit-and-ci-policy.md) reste en vigueur : faire les commits logiques en chaîne, créer les blobs/arbres/commits, puis déplacer `pc_port` une seule fois avec un contrôle `expected_sha` et sans force-push. `preparation-checks.yml` et `baseline-c-linux.yml` sont les workflows actuellement actifs, avec des périmètres distincts. À chaque lot, mettre à jour ce handoff dans la même chaîne de commits puis publier en une seule mise à jour de référence. L'archivage initial des workflows historiques est clos : ne pas le refaire.
 
 ## 7. Automatisation et documentation envisagées
 
@@ -119,11 +123,11 @@ Caches proposés :
 
 Documents de préparation proposés dans `docs/architecture/`, `docs/migration/`, `docs/assets/`, `docs/operations/` : ADR, feature matrix, source map, stratégie de parité, inventaire des formats, provenance/licences, setup, CI/cache, profiling et stratégie de tests.
 
-## 8. État de la CI après archivage
+## 8. État courant de la CI — archivage initial terminé
 
-Les copies des workflows historiques sont sous `docs/operations/workflow-archive/2026-10-22/`, avec un manifeste et les SHA des blobs originaux. Les trois fichiers ont été retirés de `.github/workflows/`.
+L'archivage des workflows historiques est un événement initial achevé le 2026-10-22. Les copies existantes se trouvent sous `docs/operations/workflow-archive/2026-10-22/`, avec le manifeste et les SHA des blobs originaux. Les workflows originaux ont été retirés de `.github/workflows/` ; **ne pas recommencer cette opération**.
 
-Les workflows actifs ont été recréés séparément : `.github/workflows/preparation-checks.yml` contrôle les docs/l'inventaire ; `.github/workflows/baseline-c-linux.yml` construit la référence C/Linux et ne conserve qu'un manifeste de checksums, pas les exécutables. La CI Rust rapide, les tests d'intégration et le profilage restent à établir. Les runs lancés avant la suppression des anciens fichiers peuvent encore terminer ; ils ne signifient pas que ces anciens workflows sont toujours actifs.
+Les workflows actuellement actifs sont `.github/workflows/preparation-checks.yml` (documentation/inventaire) et `.github/workflows/baseline-c-linux.yml` (build C/Linux et manifeste de checksums, sans exécutables). La CI Rust rapide, les tests d'intégration et le profilage restent à établir. À l'avenir, vérifier l'état de ces workflows avant toute modification : ils peuvent être ajustés ou remplacés si nécessaire, mais l'étape d'archivage initial ne fait pas partie du cycle normal de maintenance.
 
 ## 9. Prochaines actions recommandées
 
@@ -136,13 +140,18 @@ Les workflows actifs ont été recréés séparément : `.github/workflows/prepa
 
 Ne pas déclarer la baseline globale validée tant que le runtime, la scène repère, le build local et les divergences de hashes ne sont pas traités.
 
-## 10. Règle de mise à jour de ce handoff
+## 10. Règle obligatoire de mise à jour du handoff
 
-À chaque session substantielle, actualiser cette note pour enregistrer :
-- date et nouveau HEAD ;
-- commits créés et chemins modifiés ;
+**Mettre à jour ce fichier à chaque lot de commits avant de publier ce lot sur `pc_port`.** Cela s'applique même si le lot ne modifie que la CI ou la documentation. Construire la chaîne de commits logiques voulue, inclure la mise à jour de `SESSION_HANDOFF.md`, puis déplacer la référence une seule fois avec `expected_sha` et sans force-push.
+
+À chaque mise à jour, consigner :
+- date, HEAD précédent et nouveau HEAD (le HEAD indiqué ici reste un repère historique après le commit) ;
+- résumé du lot et chemins modifiés ;
 - décisions arrêtées et points toujours ouverts ;
-- commandes/tests vraiment exécutés avec leurs résultats ;
-- risques nouveaux, obstacles et prochaines actions concrètes.
+- contrôles/tests réellement exécutés et leurs résultats, sans inventer de succès ;
+- workflows actifs au moment de la passation, statut connu des runs pertinents et éventuel changement de CI ;
+- risques/obstacles et prochaine action concrète.
 
-Garder ce fichier court et opérationnel par rapport à `audit.md` (plan global) et `PREPARATION.md` (détails de P-1). Ce document sert de point d'entrée à une nouvelle session, pas de duplication des spécifications complètes.
+À chaque nouvelle session, lire d'abord le HEAD actuel de `pc_port`, puis ce fichier et les documents de référence utiles. Ne jamais déduire l'état actuel d'une ancienne SHA ou d'une ancienne note. Vérifier l'arborescence `.github/workflows/` avant toute action CI et ne jamais réarchiver les workflows historiques : leur archivage était une étape unique du démarrage de P-1. Si un workflow doit changer, mettre à jour ou remplacer la définition active justifiée par le besoin, sans refaire l'archivage initial.
+
+Garder ce fichier opérationnel par rapport à `audit.md` (plan global) et `PREPARATION.md` (détails de P-1). Il sert de point d'entrée fiable pour une nouvelle session, pas de duplication des spécifications complètes.
