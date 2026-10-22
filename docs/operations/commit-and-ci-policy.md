@@ -10,11 +10,12 @@ Pour une série de changements liés, l'objectif est de publier **une seule mise
 
 - **Développement local :** faire autant de commits cohérents que nécessaire sur une branche de travail, puis pousser la série en une seule fois.
 - **Modifications par API GitHub / agent :** préparer tous les blobs et arbres, créer un ou plusieurs commits liés, puis déplacer la référence de branche une seule fois. Ne pas utiliser `create_file` ou `update_file` successivement sur la branche surveillée pour chaque fichier d'un même lot.
-- **Sécurité CI :** les workflows de build annulent une exécution obsolète quand un commit plus récent arrive sur la même référence.
-- **Documents :** les changements Markdown seuls ne doivent pas lancer les compilations du jeu, mais devront être couverts par un workflow de validation documentaire dédié.
+- **Sécurité CI :** les trois workflows historiques ont été sauvegardés sous `docs/operations/workflow-archive/2026-10-22/` et supprimés de `.github/workflows/` pour commencer la refonte P-1.
+- **État temporaire :** aucun workflow n'est actuellement actif. La création des nouveaux workflows fait partie de P-1 ; elle ne doit pas réintroduire automatiquement les anciens fichiers.
+- **Documents :** les nouveaux contrôles devront vérifier les Markdown et les liens sans lancer inutilement les compilations du jeu.
 - **Publication :** ne pas mélanger les tâches de publication avec les tâches de test et de compilation.
 
-La politique est complémentaire à `SESSION_HANDOFF.md`, `audit.md` et `docs/architecture/PREPARATION.md`.
+La politique est complémentaire à `SESSION_HANDOFF.md`, `audit.md` et `docs/architecture/PREPARATION.md`. L'archive est documentée dans `docs/operations/workflow-archive/2026-10-22/README.md`.
 
 ## 2. Pourquoi la concurrence seule ne suffit pas
 
@@ -90,27 +91,22 @@ Règles :
 - Utiliser des branches de travail et des PR pour les lots de code importants. Ne pas effectuer de force-push sur la branche cible.
 - Faire une seule mise à jour de référence par lot, sans sacrifier la lisibilité de l'historique.
 
-## 5. Règle CI mise en place dans les workflows actuels
+## 5. État de transition des workflows
 
-Les workflows historiques `build_linux.yml`, `build_win.yml` et `build_arm.yml` utilisent désormais une clé de concurrence propre à chaque workflow et à la référence (branche ou PR) :
+Les fichiers historiques `build_linux.yml`, `build_win.yml` et `build_arm.yml` sont archivés dans `docs/operations/workflow-archive/2026-10-22/`. Les copies sont hors de `.github/workflows/` ; les originaux actifs ont été supprimés en un lot.
 
-```yaml
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-```
+**Aucun workflow GitHub Actions n'est actuellement actif.** Les runs lancés avant le retrait peuvent continuer indépendamment de l'état du HEAD ; ils ne signifient pas qu'un workflow supprimé reste actif.
 
-Comportement attendu :
-- un nouveau commit pour la même branche/PR rend le build précédent obsolète et le remplace ;
-- les builds de branches/PR distinctes ne s'annulent pas mutuellement ;
-- Linux, Windows et ARM restent des workflows séparés ; chacun garde donc son propre résultat de compilation ;
-- les déclenchements manuels peuvent être remplacés par un changement plus récent sur la même référence.
+Les nouveaux workflows P-1 devront définir :
+- événements `push`, `pull_request`, branches et chemins concernés ;
+- permissions minimales au niveau du workflow ou du job ;
+- une clé de concurrence distincte par workflow et référence, avec annulation des builds de validation obsolètes ;
+- une validation documentaire déclenchée par les changements Markdown ;
+- l'absence de ROM, sauvegardes et assets non redistribuables dans jobs, journaux et artefacts ;
+- la séparation des builds, tests, profils et publications ;
+- le batching de tous les changements avec une seule mise à jour de référence par lot.
 
-Ce système **n'est pas une garantie que les jobs précédents n'auront jamais consommé de runner** ; c'est pourquoi le batching des mises à jour de référence demeure obligatoire pour les lots successifs.
-
-Les workflows ont également été réduits à `permissions: contents: read` au niveau global : leur build et leurs artefacts ne nécessitent pas l'écriture dans le contenu du dépôt. Si une véritable étape de publication est ajoutée plus tard, ses permissions d'écriture devront être accordées uniquement à cette étape.
-
-Les workflows actuels ignorent les modifications uniquement Markdown via `paths-ignore`. Tant que le workflow de documentation n'existe pas, une modification documentaire ne prouve donc pas automatiquement que les liens et les instructions restent corrects. La préparation prévoit ce workflow séparé.
+Les fichiers archivés sont des références historiques, **pas des workflows de remplacement validés**. Les réexaminer après la définition des nouveaux contrôles.
 
 ## 6. Politique de regroupement et moment où exécuter la CI
 

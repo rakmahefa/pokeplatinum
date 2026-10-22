@@ -27,19 +27,14 @@ L'utilisateur a confirmé qu'il s'agit de son fork et a demandé de supprimer le
 
 ## 3. État Git connu
 
-HEAD confirmé au début de cette reprise : `0a47767afaaef6a0238fc71f46e7332fdb8f66e9` — commit **“docs: specify Git Data API batching procedure”**, daté du 2026-10-22 à 04:31:29 UTC. Cette SHA est le point de départ de cette inspection, pas une garantie sur la tête de branche lors d'une session future.
+HEAD inspecté avant le lot de préparation : `7cbf682c0a8ec8a6729baeb00fb98e596a0c739d`. Toujours relire le HEAD réel de `pc_port` avant d'agir ; cette SHA est un repère historique.
 
-Commits récents vérifiés sur `pc_port` :
-- `ef958c943b2fd535750e8e4c80215942aebaf465` — **“Add batched commit and stale CI run policy”** : concurrence des workflows historiques et permissions minimales ;
-- `5c0b6bac5b780427ae664456e9e7372579449237` — **“docs: add migration project entrypoint”** : point d'entrée README ;
-- `0a47767afaaef6a0238fc71f46e7332fdb8f66e9` — documentation de la procédure de commits groupés via Git Data API.
+Runs de la CI historique observés avant son retrait :
+- Linux : [run 39722714025](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714025), conclusion `success` ;
+- ARM : [run 39722714020](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714020), conclusion `success` ;
+- Windows : [run 39722714273](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714273), encore `in_progress` lors de la dernière lecture de l'API ; résultat final non confirmé.
 
-Les runs GitHub Actions suivants avaient été déclenchés sur le commit `ef958c943b2fd535750e8e4c80215942aebaf465` :
-- Linux : [run 39722714025](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714025) ;
-- Windows : [run 39722714273](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714273) ;
-- ARM : [run 39722714020](https://github.com/rakmahefa/pokeplatinum/actions/runs/39722714020).
-
-Lors de la vérification du 2026-10-22 vers 04:34 UTC, les trois runs étaient toujours signalés `in_progress`, avec l'étape de compilation en cours ; aucune conclusion réussie ou échouée n'était encore disponible. Le HEAD `0a47767` ne diffère du commit testé que par des changements documentaires (ajout de `README.md` et mise à jour de la politique CI), ignorés par les workflows historiques via `paths-ignore`. Vérifier à nouveau le HEAD et les runs avant toute nouvelle décision.
+Les trois workflows sont sauvegardés dans `docs/operations/workflow-archive/2026-10-22/`, puis retirés du répertoire actif. La chaîne Git de ce lot conserve les commits de sauvegarde et de suppression ; consulter le HEAD sur GitHub plutôt que de présumer leurs SHA dans une session future.
 
 ## 4. Documents à lire en premier
 
@@ -81,36 +76,34 @@ La chaîne Meson/Linux/Windows/ARM doit continuer à fonctionner pendant P-1. Ne
 
 ## 6. Phase en cours : P-1 — Préparation
 
-**Statut : plan documenté seulement. Les workflows, scripts et crates décrits ne sont pas encore implémentés.**
+**Statut : P-1.1 amorcé ; P0 non commencé.** Ce lot sauvegarde et retire les workflows hérités, ajoute un runbook C/Linux initial et un premier outil d'inventaire. Ces livrables sont écrits mais pas encore tous exécutés/validés.
 
-Le plan P-1 est divisé en paquets de travail :
-
-1. **P-1.1 — Baseline C/PC** : commit de référence, build reproductible, procédure de lancement, scènes et événements repères.
-2. **P-1.2 — Inventaire** : code, ressources, formats, générateurs, dépendances, licences/provenance.
-3. **P-1.3 — Parité fonctionnelle** : feature matrix, premier parcours vertical, fixtures et critères de comparaison.
+1. **P-1.1 — Baseline C/PC** : procédure initiale dans [`docs/operations/c-baseline.md`](docs/operations/c-baseline.md). Build local froid, sorties exactes, checksum et première scène repère restent à vérifier.
+2. **P-1.2 — Inventaire** : script [`tools/scripts/repo_inventory.py`](tools/scripts/repo_inventory.py) créé. Il lit un arbre Git commité, sans les fichiers untracked/ignorés ; exécution et revue du rapport restent à faire.
+3. **P-1.3 — Parité fonctionnelle** : feature matrix, parcours vertical et fixtures.
 4. **P-1.4 — ADR et spike Bevy** : frontières Bevy/domaine, deux surfaces logiques, coordonnées, tick/RNG, voie de rendu et choix final de version.
 5. **P-1.5 — Toolchain/qualité** : workspace indépendant, version Rust stable fixée, `Cargo.lock`, fmt/clippy/tests.
-6. **P-1.6 — CI Rust** : workflow PR rapide avec permissions minimales, build et tests sans ROM/asset privé.
+6. **P-1.6 — CI de remplacement** : workflows documentaires/C/Rust avec permissions minimales, filtres adéquats et politique de concurrence.
 7. **P-1.7 — `xtask`** : `doctor`, `inventory`, contrôles de génération, vérification de manifests ; sorties déterministes et mode dry-run.
 8. **P-1.8 — Documentation/sécurité** : guides de développement, provenance des assets, licences, workflows et cache.
 9. **P-1.9 — Profilage** : protocole reproductible et baseline initiale, sans seuil arbitraire au début.
 10. **P-1.10 — Revue de sortie** : revue de checklist avant d'autoriser P0.
 
-L'ordre détaillé, les critères et la checklist sont dans `docs/architecture/PREPARATION.md`.
+L'ordre détaillé et les critères restent dans `docs/architecture/PREPARATION.md`.
 
-## 7.1. Politique de commits et annulation des builds obsolètes
+## 7.1. Politique de commits et de ref
 
-La politique est documentée dans [docs/operations/commit-and-ci-policy.md](docs/operations/commit-and-ci-policy.md). Pour une série de changements, créer plusieurs commits localement si cela clarifie l'historique, puis faire un seul push. Depuis l'API GitHub, préparer blobs/arbre/commits puis déplacer la référence une seule fois ; éviter les écritures fichier par fichier sur la branche surveillée. Les workflows Linux/Windows/ARM ont une concurrence par workflow et branche/PR, avec annulation des runs obsolètes. Vérifier le HEAD courant au début de chaque session.
+La procédure documentée dans [`docs/operations/commit-and-ci-policy.md`](docs/operations/commit-and-ci-policy.md) reste en vigueur : faire les commits logiques en chaîne, créer les blobs/arbres/commits, puis déplacer `pc_port` une seule fois avec un contrôle `expected_sha` et sans force-push. Les vieux groupes de concurrence sont conservés uniquement dans l'archive ; aucun workflow n'est actif à cet instant.
 
 ## 7. Automatisation et documentation envisagées
 
-### Workflows à ajouter séparément des workflows historiques
+### Workflows de remplacement à concevoir pendant P-1
 
 - `.github/workflows/rust-pr.yml` : fmt, lint, tests rapides, validation des fixtures, build Linux minimal ;
 - `.github/workflows/rust-integration.yml` : tests headless et d'intégration, génération et assets avec fixtures approuvées ;
 - `.github/workflows/rust-nightly.yml` : maintenance planifiée, licences/advisories, docs et tendance des benchmarks ;
 - `.github/workflows/rust-profile.yml` : profilage lancé manuellement sur un runner connu ;
-- politique de commits groupés et d'annulation CI : [commit-and-ci-policy.md](docs/operations/commit-and-ci-policy.md) ;
+- vérification documentaire déclenchée sur les modifications Markdown ;
 - workflow de release seulement plus tard, avec permissions de publication strictement isolées.
 
 Caches proposés :
@@ -121,25 +114,22 @@ Caches proposés :
 
 Documents de préparation proposés dans `docs/architecture/`, `docs/migration/`, `docs/assets/`, `docs/operations/` : ADR, feature matrix, source map, stratégie de parité, inventaire des formats, provenance/licences, setup, CI/cache, profiling et stratégie de tests.
 
-## 8. État après politique CI
+## 8. État de la CI après archivage
 
-Les workflows historiques `.github/workflows/build_linux.yml`, `build_win.yml` et `build_arm.yml` possèdent une clé de concurrence par workflow et par branche/PR avec `cancel-in-progress: true`, ainsi que `permissions: contents: read`. Les builds historiques ignorent les changements uniquement Markdown. Cela évite les compilations jeu pour la documentation, mais aucun workflow de validation documentaire dédié n'existe encore.
+Les copies des workflows historiques sont sous `docs/operations/workflow-archive/2026-10-22/`, avec un manifeste et les SHA des blobs originaux. Les trois fichiers ont été retirés de `.github/workflows/`.
 
-La dernière observation des runs Linux/Windows/ARM est consignée en section 3. Tant qu'une conclusion finale n'est pas visible dans GitHub Actions, ne pas annoncer la baseline ou ces builds comme réussis. Aucun workflow Rust, workspace `engine/` ou outil `xtask` n'est déclaré opérationnel à ce stade.
+**Aucun workflow GitHub Actions n'est actuellement actif.** C'est volontaire et temporaire : P-1 doit créer des workflows adaptés et séparés pour la documentation, la baseline C si elle reste utile, la CI Rust rapide, l'intégration et le profilage. Les runs démarrés avant la suppression peuvent encore terminer ; ils ne sont pas de nouveaux workflows actifs.
 
-## 9. Prochaines actions recommandées dans la nouvelle session
+## 9. Prochaines actions recommandées
 
-Commencer par examiner l'état actuel du dépôt et reprendre **P-1.1**, sans démarrer P0 prématurément :
+1. Exécuter le protocole froid de `docs/operations/c-baseline.md` sur une machine Linux disponible ; noter les sorties, versions, SHA-256 et toute dépendance locale sans ajouter de binaire ou d'asset privé à Git.
+2. Exécuter `python3 tools/scripts/repo_inventory.py --revision HEAD --output /tmp/pokeplatinum-inventory.json`, contrôler le JSON, puis archiver uniquement un rapport expurgé/non sensible si utile.
+3. Compléter P-1.2 : cibles Meson/Make, dépendances/subprojects, générateurs, formats de ressources et provenance/licences.
+4. Concevoir les nouveaux workflows avant de les activer : validation docs, contrôles CI Rust légers, jobs d'intégration séparés ; permissions minimales, paths pertinents, caches non essentiels et annulation obsolète.
+5. Poursuivre P-1.3/P-1.4 : feature matrix, parcours vertical fondé sur les données réellement disponibles et ADR.
+6. Mettre à jour ce handoff avec les résultats mesurés et le nouvel HEAD.
 
-1. Lire `SESSION_HANDOFF.md`, [la politique de commits/CI](docs/operations/commit-and-ci-policy.md), `audit.md`, `docs/architecture/PREPARATION.md` et les workflows/builds actuels.
-2. Vérifier si la cible Linux C peut être compilée de façon reproductible dans l'environnement disponible ; enregistrer les prérequis et les éventuels blocages sans inventer de résultats.
-3. Créer une procédure de baseline sous `docs/operations/`, avec commit source, commandes exactes, sortie attendue, logs et limitation liée aux données nécessitant une installation locale.
-4. Construire un inventaire reproductible, en commençant par un script qui analyse l'arbre Git, les extensions, tailles, fichiers générés et dépendances Meson.
-5. Proposer/committer les premiers ADR essentiels, puis choisir un premier parcours vertical à partir des ressources réellement disponibles.
-6. Une fois cela établi, préparer le squelette `engine/` et le workflow Rust PR.
-7. Mettre à jour cette note à la fin de chaque session avec le nouveau HEAD, les commits, les décisions, les tests effectivement exécutés et le prochain objectif.
-
-Ne pas prétendre qu'un build, une capture, un benchmark ou un test est passé tant qu'il n'a pas été réellement exécuté.
+Ne pas déclarer la baseline validée, un script testé ou un workflow vert tant que ces résultats n'ont pas été obtenus et vérifiés.
 
 ## 10. Règle de mise à jour de ce handoff
 

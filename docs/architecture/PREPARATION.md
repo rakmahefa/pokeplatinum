@@ -405,8 +405,8 @@ Ordre conseillé : P-1.1 et P-1.2 en premier ; P-1.3 en parallèle de l'inventai
 P0 peut débuter lorsque :
 
 - [ ] Le commit C de référence et la commande de build sont documentés et reproductibles.
-- [ ] Les workflows historiques ARM/Linux/Windows restent présents et leur rôle est clair.
-- [ ] La cartographie distingue code, ressources, générateurs, dépendances et sorties de build.
+- [ ] La stratégie CI de remplacement est documentée et vérifiable ; les workflows historiques sont archivés hors de `.github/workflows/` et ne sont pas réactivés tels quels.
+- [ ] La cartographie générée distingue code, ressources, générateurs, dépendances et sorties de build ; le script d'inventaire a été exécuté et son rapport examiné.
 - [ ] La provenance/licence des dépendances et règles de distribution sont documentées.
 - [ ] Le parcours vertical est choisi et les ressources/IDs nécessaires sont identifiés.
 - [ ] Les comportements à préserver et les divergences PC autorisées sont écrits.

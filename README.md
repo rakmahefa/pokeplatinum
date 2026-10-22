@@ -26,16 +26,16 @@ Toujours vérifier le HEAD réel de la branche `pc_port` sur GitHub avant de com
 
 ## État de l'automatisation
 
-- Les workflows C/Linux, Windows et ARM sont conservés.
-- Les builds obsolètes d'une même branche/PR sont annulés par les groupes de concurrence GitHub Actions.
-- Les workflows de build utilisent `contents: read` ; aucune permission d'écriture n'est nécessaire pour compiler et téléverser les artefacts.
-- Les lots liés doivent être poussés en une seule mise à jour de référence ; voir la politique commits/CI.
-- Le workflow Rust, le workspace `engine/`, les outils `xtask` et le cache d'assets restent à créer pendant P-1.
-- Les modifications Markdown seules ne déclenchent pas les builds historiques ; un contrôle documentaire distinct est prévu.
+- Les anciens workflows Linux, Windows et ARM ont été copiés à l'identique dans `docs/operations/workflow-archive/2026-10-22/`, puis retirés de `.github/workflows/` pour commencer la refonte P-1. Ils ne doivent pas être réactivés sans revue.
+- **Aucun workflow GitHub Actions n'est actuellement actif dans ce dépôt.** C'est un état transitoire explicite : les nouvelles vérifications doivent être conçues pendant P-1 avec permissions minimales, filtres adaptés, validation documentaire et annulation des runs obsolètes.
+- Le runbook initial de baseline C/Linux se trouve dans `docs/operations/c-baseline.md`. L'exécution locale froide et les preuves d'artefacts restent à enregistrer.
+- `tools/scripts/repo_inventory.py` commence l'inventaire déterministe de l'arbre Git versionné ; son exécution et la revue du rapport restent à faire.
+- Les lots liés doivent toujours être publiés en une seule mise à jour de référence ; voir la politique commits/CI.
+- Le workspace Rust `engine/`, `xtask` et les nouveaux workflows restent à créer pendant P-1.
 
 ## Première étape recommandée
 
-Reprendre **P-1.1 — Baseline C/PC reproductible** : vérifier les prérequis, tenter une compilation de référence dans l'environnement disponible, documenter les commandes exactes et les blocages réels, puis établir le protocole de comparaison. Ne déclarer aucun build ou test réussi sans l'avoir exécuté.
+Reprendre **P-1.1 — Baseline C/PC reproductible** avec le [runbook initial](docs/operations/c-baseline.md), puis exécuter et consigner le [premier inventaire Git](tools/scripts/repo_inventory.py) pour alimenter P-1.2. Ne déclarer aucun build ou test réussi sans l'avoir exécuté.
 
 ## Règle de travail
 
