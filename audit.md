@@ -6,6 +6,23 @@
 > **Date :** 2026-10-22  
 > **Objectif :** remplacer progressivement l’implémentation native actuelle par un runtime de jeu écrit en Rust et rendu par Bevy, sans prétendre que Bevy reproduit automatiquement les spécificités de la Nintendo DS.
 
+## Phase préalable P-1 — Préparation obligatoire
+
+**P0 ne doit pas commencer avant la clôture de cette phase.** La préparation doit établir une baseline reproductible, un corpus de parité, une cartographie des formats et dépendances, les ADR fondamentales, le workspace Rust isolé, les outils développeur et des workflows CI/cache sécurisés.
+
+Le plan détaillé, les livrables, les commandes d'automatisation envisagées et la checklist de sortie sont documentés dans [docs/architecture/PREPARATION.md](docs/architecture/PREPARATION.md).
+
+P-1 inclut notamment :
+- geler et documenter le port C comme oracle, choisir la première tranche verticale et définir la matrice des fonctionnalités ;
+- inventer les ressources/formats, générateurs, dépendances et obligations de provenance/licence ;
+- valider la version Bevy avec un spike reproductible avant de la figer ;
+- séparer domaine Rust pur, runtime Bevy et compatibilité Nitro/DS ;
+- préparer doctor/inventory/gen-check, les fixtures synthétiques, le profilage et le cache à clés versionnées ;
+- établir des workflows PR rapides, intégration, maintenance et profilage avec permissions minimales ;
+- documenter les contrats d'architecture et définir les critères de sortie.
+
+La fin de P-1 est conditionnée à une revue explicite de la checklist. Les exceptions doivent avoir une justification, un propriétaire et une date de réévaluation.
+
 ## 1. Résumé exécutif
 
 ### Conclusion
